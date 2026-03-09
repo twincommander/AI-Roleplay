@@ -275,44 +275,22 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 //  PROMPTS
 // ══════════════════════════════════════════════
 
-const PITCH_SYS = `You are a world-class Cisco Account Executive delivering an opening pitch to Sonia Abiven, CIO (AI) of GlobalConnect — a 47-country enterprise transforming with AI.
+const PITCH_SYS = `You are a Cisco Account Executive opening a meeting with Sonia Abiven, CIO (AI) of GlobalConnect — 47 countries, major AI transformation underway.
 
-Write a confident, conversational opening pitch (200-230 words, natural spoken pace ~90 seconds).
+Write a punchy opening pitch — 80 words MAX. Fast, confident, no filler.
+Hit: AI-ready networking, security in the fabric, unified management, ROI numbers, One Cisco Story.
+End with one sharp question to Sonia.
 
-Cover ALL of these naturally:
-1. Acknowledge her AI transformation challenge: 47 countries, inconsistent performance, security complexity
-2. Cisco Secure Networking for the AI Era — AI-ready infrastructure with performance guarantees
-3. ThousandEyes for end-to-end global visibility; Catalyst + Meraki for consistent bandwidth at every site
-4. Security fused INTO the network — Cisco AI Defense — not a bolt-on product, built into the fabric
-5. Cisco AI Canvas — single pane of glass, 40% fewer support tickets, unified global management
-6. Business outcomes: 40% less unplanned downtime, 30% OpEx savings within year one
-7. Investment protection — Cisco Enterprise Agreement, works with existing gear, no rip-and-replace
-8. One Cisco Story — one architecture, one vendor, data center to branch to remote, end-to-end
-9. End with a direct question inviting Sonia to share her biggest pain point
+Output ONLY the spoken pitch. No labels, no markdown.`;
 
-Tone: confident peer, trusted advisor, not a product brochure.
-Output ONLY the spoken pitch text. No labels, no markdown.`;
+const RESPONSE_SYS = `You are a Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect.
 
-const RESPONSE_SYS = `You are a world-class Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect. She has just asked you a question or made a comment.
+Answer her question directly and concisely. 60-75 words MAX — be sharp, no filler sentences.
+Weave in the most relevant Cisco proof points: ThousandEyes, Catalyst/Meraki, Cisco AI Defense, AI Canvas, Cisco EA, One Cisco Story.
+Use at least one specific number (40% downtime, 30% OpEx, etc.).
+End with one short question.
 
-Your job: generate the PERFECT spoken response that scores 100/100 on ALL 6 dimensions.
-
-The 6 dimensions — weave ALL of them into every response:
-1. ai_network (100): ThousandEyes end-to-end visibility, Catalyst+Meraki guaranteed bandwidth/latency for AI workloads globally
-2. security_fusion (100): Cisco AI Defense fused into the network fabric — threat detection at the packet level, not a separate tool
-3. ops_simplicity (100): Cisco AI Canvas single pane of glass, 40% fewer support tickets, one management plane for 200+ locations
-4. business_value (100): Specific numbers — 40% less unplanned downtime, 30% OpEx reduction, faster AI time-to-value, measurable ROI milestones
-5. investment_protection (100): Cisco Enterprise Agreement, existing Cisco + non-Cisco gear protected, modular adoption, no rip-and-replace
-6. one_cisco (100): One architecture, one vendor, data center to branch to remote — seamless end-to-end integration
-
-Rules:
-- Directly answer Sonia's specific question FIRST — don't ignore what she asked
-- Then weave in whichever dimensions the conversation hasn't fully covered yet
-- Be conversational, peer-level — not a bullet-point list
-- Use specific product names and numbers throughout
-- 150-200 words
-- End with a direct question to keep Sonia engaged
-- Output ONLY the spoken response. No labels, no markdown.`;
+Output ONLY the spoken reply. No labels, no markdown, no bullet points.`;
 
 const SCORE_SYS = `You are an expert Cisco sales evaluator. Based on the conversation so far, score the seller's performance across 6 dimensions (0-100 each). Return ONLY raw JSON — no markdown, no explanation.
 {"ai_network":0,"security_fusion":0,"ops_simplicity":0,"business_value":0,"investment_protection":0,"one_cisco":0,"overall_feedback":"one short coaching tip"}`;
@@ -413,7 +391,7 @@ function speakText(text, onDone) {
       voices.find(v => v.lang === 'en-US') ||
       voices.find(v => v.lang.startsWith('en-')) || voices[0];
     if (v) u.voice = v;
-    u.rate = 0.82; u.pitch = 0.9; u.volume = 1.0;
+    u.rate = 1.15; u.pitch = 0.9; u.volume = 1.0;
     u.onstart = () => {
       document.getElementById('playBanner').style.display = 'flex';
       document.getElementById('bannerTxt').textContent = '🔊 Your response is playing...';
@@ -459,7 +437,7 @@ Let me be specific. With ThousandEyes, your team gets end-to-end visibility acro
 
 Here's what makes Cisco different from every other vendor: our security isn't a separate product bolted on — Cisco AI Defense is fused directly into the network fabric, detecting and stopping AI-powered threats at every packet, at every site, automatically.
 
-Your team is juggling too many consoles today. Cisco AI Canvas gives you a single pane of glass across your entire 200-location estate. Our customers see 40 percent fewer support tickets and 30 percent OpEx savings in year one.
+Cisco AI Canvas gives you a single pane of glass across your entire 200-location estate. Our customers see 40 percent fewer support tickets and 30 percent OpEx savings in year one.
 
 And I know you have existing gear — Cisco and non-Cisco. Our Enterprise Agreement protects every investment. No rip-and-replace.
 
