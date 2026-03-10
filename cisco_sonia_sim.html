@@ -600,17 +600,31 @@ async function generateResponse() {
     .map(k => `${k}:${document.getElementById('val_'+k).textContent||0}`)
     .join(', ');
 
-  // Build message history for API (only role+content, no label)
-  // Sonia = 'user' (she prompts), seller = 'assistant' (Claude generates seller replies)
-  const apiMsgs = history.map(h => ({ role: h.role === 'sonia' ? 'user' : 'assistant', content: h.content }));
+  // Build a clean alternating message history for the API.
+  // Sonia = 'user', seller = 'assistant'. Must strictly alternate.
+  // We exclude Sonia's LAST question from history and instead send it as the
+  // final user message so we can inject the score context cleanly.
+  const priorHistory = history.slice(0, -1); // everything except Sonia's last question
+  const apiMsgs = [];
+  for (const h of priorHistory) {
+    const role = h.role === 'sonia' ? 'user' : 'assistant';
+    // Skip if this would create consecutive same-role messages
+    if (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === role) continue;
+    apiMsgs.push({ role, content: h.content });
+  }
+  // Ensure we end on an assistant turn before Sonia speaks (drop trailing user if any)
+  while (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === 'user') apiMsgs.pop();
 
-  // Sonia's captured question is already the last entry in apiMsgs
-  // Just append a coaching note so Claude knows to stay on-topic
-  const coachNote = `[Score context: ${scoreCtx}. Respond directly to what Sonia just said. Stay specific to her exact question.]`;
+  // Final user message = Sonia's exact question + score context
+  const finalUserMsg = `Sonia just said: "${currentCapture}"
+
+Score context (lower = needs more coverage): ${scoreCtx}
+
+Respond SPECIFICALLY to what Sonia said above. Do not give a generic pitch.`;
 
   try {
     generatedResponse = await callAPI(
-      [...apiMsgs, { role: 'user', content: coachNote }],
+      [...apiMsgs, { role: 'user', content: finalUserMsg }],
       RESPONSE_SYS
     );
   } catch(e) {
