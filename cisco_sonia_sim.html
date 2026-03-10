@@ -285,12 +285,17 @@ Output ONLY the spoken pitch. No labels, no markdown.`;
 
 const RESPONSE_SYS = `You are a Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect.
 
-Answer her question directly and concisely. 60-75 words MAX — be sharp, no filler sentences.
-Weave in the most relevant Cisco proof points: ThousandEyes, Catalyst/Meraki, Cisco AI Defense, AI Canvas, Cisco EA, One Cisco Story.
-Use at least one specific number (40% downtime, 30% OpEx, etc.).
-End with one short question.
+The conversation history shows what has been said. Your job is to respond to Sonia's MOST RECENT message specifically — her exact words, her exact concern, her exact objection.
 
-Output ONLY the spoken reply. No labels, no markdown, no bullet points.`;
+DO NOT give a generic Cisco pitch. Mirror her language. If she asks about cost, talk cost. If she asks about security, lead with security. If she's skeptical, address that skepticism head-on.
+
+Rules:
+- 60-75 words MAX
+- First sentence directly addresses her specific point
+- Weave in 1-2 relevant Cisco proof points (ThousandEyes, Catalyst/Meraki, AI Defense, AI Canvas, Cisco EA)
+- Include one number (40% downtime, 30% OpEx, etc.)
+- End with one short follow-up question
+- Output ONLY the spoken reply. No labels, no markdown.`;
 
 const SCORE_SYS = `You are an expert Cisco sales evaluator. Based on the conversation so far, score the seller's performance across 6 dimensions (0-100 each). Return ONLY raw JSON — no markdown, no explanation.
 {"ai_network":0,"security_fusion":0,"ops_simplicity":0,"business_value":0,"investment_protection":0,"one_cisco":0,"overall_feedback":"one short coaching tip"}`;
@@ -596,17 +601,16 @@ async function generateResponse() {
     .join(', ');
 
   // Build message history for API (only role+content, no label)
-  const apiMsgs = history.map(h => ({ role: h.role === 'me' ? 'user' : 'assistant', content: h.content }));
+  // Sonia = 'user' (she prompts), seller = 'assistant' (Claude generates seller replies)
+  const apiMsgs = history.map(h => ({ role: h.role === 'sonia' ? 'user' : 'assistant', content: h.content }));
 
-  const prompt = `Current dimension scores: ${scoreCtx}
-  
-Sonia just said: "${currentCapture}"
-
-Generate my optimal Cisco response that directly addresses what Sonia said AND maximizes all 6 dimension scores.`;
+  // Sonia's captured question is already the last entry in apiMsgs
+  // Just append a coaching note so Claude knows to stay on-topic
+  const coachNote = `[Score context: ${scoreCtx}. Respond directly to what Sonia just said. Stay specific to her exact question.]`;
 
   try {
     generatedResponse = await callAPI(
-      [...apiMsgs, { role: 'user', content: prompt }],
+      [...apiMsgs, { role: 'user', content: coachNote }],
       RESPONSE_SYS
     );
   } catch(e) {
