@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.7</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.8</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -698,14 +698,21 @@ async function startSim() {
   }
 
   showTyping(false);
-  addToLog('me', pitchText, 'YOU · OPENING PITCH');
-  setStatus('Click ▶ Play Opening Pitch to begin');
+  // Store the pitch for after the hello
+  window._pendingPitch = pitchText;
 
-  // Show the play button for the opening pitch
-  generatedResponse = pitchText;
+  // Step 1: greet Sonia first
+  const helloText = `Sonia, great to meet you. Thanks for making time today.`;
+  addToLog('me', helloText, 'YOU · GREETING');
+  generatedResponse = helloText;
+
   document.getElementById('playBtn').style.display = 'inline-flex';
-  document.getElementById('playBtn').textContent = '▶ Play Opening Pitch';
-  document.getElementById('btnHint').textContent = 'Click ▶ to play your opening pitch aloud, then capture Sonia\'s response';
+  document.getElementById('playBtn').textContent = '👋 Say Hello to Sonia';
+  document.getElementById('btnHint').textContent = 'Click to say hello, then your opening pitch will follow';
+  setStatus('Click 👋 to greet Sonia — opening pitch queues automatically');
+
+  // Override playResponse just for this first click
+  window._helloMode = true;
 }
 
 // ══════════════════════════════════════════════
@@ -1097,6 +1104,34 @@ function playResponse() {
   const btn = document.getElementById('playBtn');
   btn.disabled = true;
   btn.textContent = '⏸ Playing...';
+
+  // Hello mode: play greeting then immediately chain to opening pitch
+  if (window._helloMode) {
+    window._helloMode = false;
+    speakText(generatedResponse, () => {
+      btn.disabled = false;
+      // Small pause then auto-play opening pitch
+      const pitchText = window._pendingPitch;
+      addToLog('me', pitchText, 'YOU · OPENING PITCH');
+      generatedResponse = pitchText;
+      btn.textContent = '▶ Playing Opening Pitch...';
+      btn.disabled = true;
+      setTimeout(() => {
+        speakText(pitchText, () => {
+          btn.style.display = 'none';
+          btn.disabled = false;
+          currentCapture = '';
+          generatedResponse = '';
+          updateScores();
+          setStatus('🎤 Listening for Sonia — click Stop when she finishes');
+          document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
+          setTimeout(() => toggleMic(), 400);
+        });
+      }, 300);
+    });
+    return;
+  }
+
   speakText(generatedResponse, () => {
     btn.style.display = 'none';
     btn.disabled = false;
