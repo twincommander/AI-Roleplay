@@ -249,7 +249,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.9</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.0</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -480,10 +480,16 @@ function addToLog(role, text, label) {
 async function callAPI(messages, system) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1024, system, messages })
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 512, system, messages })
   });
-  if (!res.ok) throw new Error('API ' + res.status);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => res.status);
+    throw new Error('API ' + res.status + ': ' + errText);
+  }
   const d = await res.json();
   if (d.error) throw new Error(d.error.message);
   return d.content?.[0]?.text || '';
@@ -744,9 +750,24 @@ Reply ONLY to what Sonia just said above. Different angle, different words, new 
       RESPONSE_SYS
     );
   } catch(e) {
-    // Short contextual fallback — not a generic pitch
-    generatedResponse = `Good question. ThousandEyes pinpoints exactly where performance breaks down across your 47 sites. That cut unplanned downtime 40% for similar deployments. Which sites are hurting most right now?`;
-    console.log('Fallback response used:', e.message);
+    console.error('API error:', e.message);
+    showErr('API error — check console. Using local response. Error: ' + e.message);
+    // Dynamic fallback keyed to Sonia's actual words
+    const q = currentCapture.toLowerCase();
+    if (q.includes('cost') || q.includes('budget') || q.includes('price') || q.includes('roi') || q.includes('saving')) {
+      generatedResponse = `Cisco EA customers cut OpEx 30% in year one — bundled licensing, no surprise costs. One agreement covers your entire 47-country estate. What's your current annual run rate on networking and security tools?`;
+    } else if (q.includes('security') || q.includes('threat') || q.includes('breach') || q.includes('attack') || q.includes('compliance')) {
+      generatedResponse = `Cisco AI Defense detects threats at the packet level — fused into the fabric, not a separate tool. Zero extra consoles. Blocks AI-powered attacks automatically across all 200 sites. What's your biggest security gap today?`;
+    } else if (q.includes('manag') || q.includes('console') || q.includes('complex') || q.includes('team') || q.includes('operati')) {
+      generatedResponse = `AI Canvas gives your team one pane of glass for all 200 locations — customers cut support tickets 40%. No more tool-hopping. How many consoles is your team juggling today?`;
+    } else if (q.includes('exist') || q.includes('replac') || q.includes('invest') || q.includes('gear') || q.includes('current')) {
+      generatedResponse = `Cisco EA protects every dollar already spent — works alongside your existing gear, Cisco and non-Cisco. Modular adoption, no rip-and-replace. Which parts of your infrastructure are you most protective of?`;
+    } else if (q.includes('perform') || q.includes('latency') || q.includes('bandwidth') || q.includes('slow') || q.includes('asia') || q.includes('manufactur') || q.includes('remote') || q.includes('branch')) {
+      generatedResponse = `ThousandEyes shows exactly where your Asia and South America sites break down — network path, cloud hop, every segment. Cuts mean time-to-resolve by 70%. Which sites are the worst offenders?`;
+    } else {
+      generatedResponse = `ThousandEyes pinpoints performance issues across all 47 countries in real time — network, cloud, and application visibility in one view. Cuts troubleshooting from hours to minutes. Where are you seeing the most pain today?`;
+    }
+    console.log('Dynamic fallback used for:', currentCapture);
   }
 
   showTyping(false);
