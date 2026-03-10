@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.8</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.9</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -414,8 +414,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 const PITCH_SYS = `You are a Cisco AE opening a meeting with Sonia Abiven, CIO of GlobalConnect — 47 countries, AI transformation underway.
 
-Write a 40-word MAX opening. One sentence on the problem, one sentence on Cisco's differentiation, one sharp question.
-No pleasantries, no lists, no product parade.
+Write a 30-word MAX opening. One sentence on Cisco's edge for AI, one sharp question. No intro, no pleasantries.
 
 Output ONLY the spoken words.`;
 
@@ -431,7 +430,7 @@ Your responses are scored on 6 dimensions — weave the most relevant ones into 
 
 RULES:
 - Directly answer what Sonia specifically asked — use her language
-- 40-50 words max
+- 30-35 words max
 - Never repeat a point already made
 - No tacked-on close phrases unless all 6 dimensions have been covered
 - Output ONLY the spoken reply. No labels, no markdown.`;
@@ -542,7 +541,7 @@ function speakText(text, onDone) {
       voices.find(v => v.lang === 'en-US') ||
       voices.find(v => v.lang.startsWith('en-')) || voices[0];
     if (v) u.voice = v;
-    u.rate = 1.0; u.pitch = 0.9; u.volume = 1.0;
+    u.rate = 1.12; u.pitch = 0.9; u.volume = 1.0;
     u.onstart = () => {
       document.getElementById('playBanner').style.display = 'flex';
       document.getElementById('bannerTxt').textContent = '🔊 Your response is playing...';
@@ -685,7 +684,7 @@ async function startSim() {
   setStatus('Generating your opening pitch...');
   showTyping(true);
 
-  const FALLBACK_PITCH = `GlobalConnect's AI initiatives are only as reliable as the network underneath them — and right now, inconsistent performance across 47 countries is the bottleneck. Cisco's secure networking for the AI era fixes that end-to-end: guaranteed bandwidth, embedded security, one management plane. Where is the inconsistency hurting you most today?`;
+  const FALLBACK_PITCH = `Inconsistent performance is blocking your AI rollout across 47 countries. Cisco solves it end-to-end — guaranteed bandwidth, embedded security, one pane of glass. Where's the biggest pain right now?`;
 
   let pitchText = FALLBACK_PITCH;
   try {
@@ -702,7 +701,7 @@ async function startSim() {
   window._pendingPitch = pitchText;
 
   // Step 1: greet Sonia first
-  const helloText = `Sonia, great to meet you. Thanks for making time today.`;
+  const helloText = `Sonia, great to meet you.`;
   addToLog('me', helloText, 'YOU · GREETING');
   generatedResponse = helloText;
 
