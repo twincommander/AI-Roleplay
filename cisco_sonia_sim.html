@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.9</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.0</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -426,7 +426,7 @@ Your responses are scored on 6 dimensions — weave the most relevant ones into 
 3. Ops simplified: AI Canvas unified management, one policy push, 40% fewer tickets, frees engineering time
 4. Business value: specific numbers — 40% downtime reduction, 30% OpEx savings, real customer examples
 5. Investment protection: EA is additive, works with existing gear, no rip-and-replace, phased adoption
-6. One Cisco Story: one architecture, one vendor, one support conversation, data center to edge
+6. One Cisco Story: explicitly name it — one architecture, ThousandEyes + Catalyst + Meraki + AI Defense + AI Canvas working as one platform, data center to edge, one vendor accountable for all layers
 
 RULES:
 - Directly answer what Sonia specifically asked — use her language
@@ -880,14 +880,16 @@ const ANSWERS = {
 
   // DIMENSION 5 — Investment protection / flexibility
   investment: [
-    `Nothing you have gets displaced. The Cisco Enterprise Agreement is additive — ThousandEyes visibility runs alongside your existing infrastructure from day one. No migration required to get value. Most customers start with their 3 worst-performing sites, demonstrate the ROI, then expand at their pace. Your legacy OT gear stays managed exactly as it is today.`,
-    `Your existing investments are protected at two levels. First, the EA covers Cisco and non-Cisco infrastructure in the management layer — AI Canvas manages your full mixed estate. Second, modular adoption means you activate capabilities in phases: visibility first with ThousandEyes, then security enforcement with AI Defense, then full unified management. No forklift upgrades, no forced migrations.`,
+    `The Cisco Enterprise Agreement is one unified license — networking, security, management — covering your Cisco and non-Cisco gear, on-prem and cloud, under one predictable price. Nothing you have gets displaced. You activate ThousandEyes visibility first, prove value at your three worst sites, then expand. It's a strategic platform for AI growth, not a replacement cycle.`,
+    `Investment protection is built into how Cisco licenses. One EA covers your full mixed estate — legacy OT, modern branches, cloud workloads — with flexible deployment: on-prem, cloud-managed, or hybrid. Your existing infrastructure becomes AI-ready through activation, not migration. That means your capital investments keep working while you scale AI initiatives globally.`,
+    `The EA protects what you have and funds what you need. Unified licensing across on-prem and cloud removes the per-site cost unpredictability your team is managing today. Phased activation — ThousandEyes now, AI Defense and AI Canvas on your timeline — means you control the pace. This is Cisco as a long-term AI infrastructure partner, not a one-time hardware sale.`,
   ],
 
   // DIMENSION 6 — One Cisco Story / holistic partner
   one_cisco: [
-    `What makes this different from evaluating individual point solutions: Cisco is one architecture from your data center to your most remote plant. ThousandEyes, Catalyst, Meraki, AI Defense, and AI Canvas share a common data plane. An event detected by AI Defense automatically appears in AI Canvas and correlates with the ThousandEyes network path — without any integration work from your team. One vendor, one contract, one support conversation.`,
-    `The single-partner value: when something breaks at 3am in Southeast Asia, you call one number. Cisco owns the network layer, the security layer, and the management layer. No finger-pointing between vendors. That matters enormously for a team managing time zones across 47 countries. Your escalation path is simple and accountable.`,
+    `This is what Cisco calls the One Cisco Story — one architecture from your data center to your most remote plant across all 47 countries. ThousandEyes, Catalyst, Meraki, AI Defense, and AI Canvas share a common data plane. Security events, network events, and application performance all correlate in one timeline automatically. No integration tax. One vendor owns the outcome.`,
+    `The One Cisco Story means GlobalConnect gets portfolio breadth no other vendor can match — networking, security, observability, and management designed to work together from day one. When something breaks at 3am in Southeast Asia, you call one number. Cisco owns all layers. No finger-pointing, no escalation maze. That accountability is the strategic differentiator for a team managing 47 countries.`,
+    `What no point solution vendor can offer: the One Cisco Story gives you a single AI-ready architecture that spans data center, campus, branch, factory floor, and cloud — all managed through AI Canvas, all visible through ThousandEyes, all secured by AI Defense. It's not a bundle. It's an integrated platform built end-to-end for the AI era. Peace of mind across GlobalConnect's entire footprint from one trusted partner.`,
   ],
 
   // Competitor differentiation — when Sonia compares to other vendors
@@ -936,7 +938,7 @@ function getAnswerKey(text) {
   if (q.includes('exist') || q.includes('legacy') || q.includes('replac') || q.includes('rip') || q.includes('already have') || q.includes('mix of') || q.includes('current infra') || q.includes('hesitant') || q.includes('start over')) return 'investment';
 
   // One Cisco / holistic / single vendor
-  if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') || q.includes('end-to-end') || q.includes('portfolio') || q.includes('trusted partner')) return 'one_cisco';
+  if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') || q.includes('end-to-end') || q.includes('portfolio') || q.includes('trusted partner') || q.includes('single partner') || q.includes('one partner') || q.includes('breadth') || q.includes('comprehensive')) return 'one_cisco';
 
   // Distributed AI / network performance
   if (q.includes('distributed') || q.includes('latency') || q.includes('bandwidth') || q.includes('performance') || q.includes('ai workload') || q.includes('manufactur') || q.includes('edge') || q.includes('remote site')) return 'distributed';
