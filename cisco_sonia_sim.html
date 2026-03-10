@@ -137,13 +137,125 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @keyframes wave{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+
+/* ══════════════════════════════════════════════
+   MOBILE / IPHONE RESPONSIVE
+   ══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Splash */
+  #splash { padding: 24px 18px; }
+  .s-title { font-size: 1.6rem; }
+  .s-sub { font-size: 13px; }
+  .s-hint { font-size: 11px; display: none; }
+  .flow { display: none; }
+  .pills { gap: 5px; }
+  .pill { font-size: 10px; padding: 4px 9px; }
+  #startBtn { padding: 14px 36px; font-size: 15px; width: 100%; }
+
+  /* App shell - full height with safe areas */
+  body { height: 100dvh; }
+  #app { height: 100dvh; }
+
+  /* Topbar - compact */
+  #topbar { padding: 7px 12px; gap: 6px; }
+  .av { width: 30px; height: 30px; font-size: 12px; }
+  .av-name { font-size: 11px; }
+  .av-sub { display: none; }
+  .top-right { gap: 7px; }
+  #scoreDisplay { font-size: 11px; }
+  #ttsBtn { padding: 4px 8px; font-size: 10px; }
+  #winBadge { font-size: 10px; padding: 3px 8px; }
+
+  /* Hide sidebar - show scores inline as compact row */
+  #sidebar { display: none; }
+
+  /* Scores mini bar replaces sidebar on mobile */
+  #mobileScores {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0,0,0,.3);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #mobileScores::-webkit-scrollbar { display: none; }
+  .ms-pill {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 4px 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .ms-pill-lbl { font-size: 8px; color: var(--faint); white-space: nowrap; }
+  .ms-pill-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; }
+
+  /* Body layout - no sidebar */
+  #body { flex-direction: column; }
+  #chatWrap { flex: 1; min-height: 0; }
+  #chatLog { padding: 12px 12px; gap: 9px; }
+
+  /* Messages */
+  .msg-bub { max-width: 90%; font-size: 13px; padding: 8px 11px; }
+  .msg-av { width: 24px; height: 24px; font-size: 10px; }
+
+  /* Capture area - taller touch targets */
+  #captureArea { padding: 10px 12px; }
+  #soniaCapture { padding: 9px 11px; margin-bottom: 8px; }
+  #capturedText { font-size: 13px; }
+  .btn-row { gap: 7px; flex-wrap: wrap; }
+
+  /* Buttons - full width on mobile */
+  #micBtn {
+    height: 48px;
+    font-size: 14px;
+    flex: 1;
+    justify-content: center;
+    min-width: 140px;
+  }
+  #generateBtn {
+    height: 48px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 140px;
+  }
+  #playBtn {
+    height: 48px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 120px;
+  }
+  #clearBtn {
+    height: 48px;
+    font-size: 12px;
+    padding: 0 12px;
+  }
+  .btn-hint { font-size: 10px; }
+
+  /* Play banner */
+  #playBanner { padding: 5px 12px; font-size: 11px; }
+  #bannerTxt { font-size: 10px; }
+
+  /* Live transcript */
+  #liveTx { font-size: 11px; }
+
+  /* Error toast */
+  #errToast { bottom: 100px; font-size: 12px; max-width: 90vw; }
+}
+
 </style>
 </head>
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.5</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.6</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -192,6 +304,15 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
   </div>
 
   <div id="body">
+  <!-- Mobile score pills (hidden on desktop, shown on mobile) -->
+  <div id="mobileScores" style="display:none;">
+    <div class="ms-pill"><span class="ms-pill-lbl">⚡ AI Net</span><span class="ms-pill-val" id="mob_ai_network" style="color:#00bceb">0</span></div>
+    <div class="ms-pill"><span class="ms-pill-lbl">🛡️ Security</span><span class="ms-pill-val" id="mob_security_fusion" style="color:#00c98d">0</span></div>
+    <div class="ms-pill"><span class="ms-pill-lbl">⚙️ Ops</span><span class="ms-pill-val" id="mob_ops_simplicity" style="color:#a78bfa">0</span></div>
+    <div class="ms-pill"><span class="ms-pill-lbl">📊 Value</span><span class="ms-pill-val" id="mob_business_value" style="color:#f59e0b">0</span></div>
+    <div class="ms-pill"><span class="ms-pill-lbl">🔒 Invest</span><span class="ms-pill-val" id="mob_investment_protection" style="color:#f87171">0</span></div>
+    <div class="ms-pill"><span class="ms-pill-lbl">🌐 One</span><span class="ms-pill-val" id="mob_one_cisco" style="color:#34d399">0</span></div>
+  </div>
     <!-- Sidebar scorecard -->
     <div id="sidebar">
       <div class="sb-lbl">Live Scorecard</div>
@@ -711,6 +832,9 @@ async function updateScores() {
       document.getElementById('bar_'+k).style.width = v+'%';
       const c = document.getElementById('card_'+k);
       v > 65 ? c.classList.add('lit') : c.classList.remove('lit');
+      // Update mobile pills
+      const mob = document.getElementById('mob_'+k);
+      if (mob) mob.textContent = v;
     });
     document.getElementById('totalNum').textContent = total;
     document.getElementById('totalNum').style.color = total>500?'#00c98d':total>300?'#f59e0b':'#f87171';
