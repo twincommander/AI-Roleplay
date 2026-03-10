@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.6</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.7</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -412,13 +412,12 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 //  PROMPTS
 // ══════════════════════════════════════════════
 
-const PITCH_SYS = `You are a Cisco Account Executive opening a meeting with Sonia Abiven, CIO (AI) of GlobalConnect — 47 countries, major AI transformation underway.
+const PITCH_SYS = `You are a Cisco AE opening a meeting with Sonia Abiven, CIO of GlobalConnect — 47 countries, AI transformation underway.
 
-Write a punchy opening pitch — 80 words MAX. Fast, confident, no filler.
-Hit: AI-ready networking, security in the fabric, unified management, ROI numbers, One Cisco Story.
-End with one sharp question to Sonia.
+Write a 40-word MAX opening. One sentence on the problem, one sentence on Cisco's differentiation, one sharp question.
+No pleasantries, no lists, no product parade.
 
-Output ONLY the spoken pitch. No labels, no markdown.`;
+Output ONLY the spoken words.`;
 
 const RESPONSE_SYS = `You are a Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect.
 
@@ -686,19 +685,7 @@ async function startSim() {
   setStatus('Generating your opening pitch...');
   showTyping(true);
 
-  const FALLBACK_PITCH = `Sonia, thank you for making the time. I know you're in the middle of a major AI transformation across 47 countries and 200-plus locations — and the pressure to deliver consistent performance while keeping everything secure and operationally manageable is immense. That's exactly the challenge Cisco's Secure Networking for the AI Era was built to solve.
-
-Let me be specific. With ThousandEyes, your team gets end-to-end visibility across every circuit, every cloud path, every location globally — so you see and fix performance issues before your users do. Catalyst and Meraki guarantee the bandwidth and low latency your AI workloads demand, whether that's headquarters, a factory floor in Osaka, or a branch in São Paulo.
-
-Here's what makes Cisco different from every other vendor: our security isn't a separate product bolted on — Cisco AI Defense is fused directly into the network fabric, detecting and stopping AI-powered threats at every packet, at every site, automatically.
-
-Cisco AI Canvas gives you a single pane of glass across your entire 200-location estate. Our customers see 40 percent fewer support tickets and 30 percent OpEx savings in year one.
-
-And I know you have existing gear — Cisco and non-Cisco. Our Enterprise Agreement protects every investment. No rip-and-replace.
-
-This is the One Cisco Story: one architecture, one vendor, from your data center to your most remote branch, designed end-to-end for the AI era.
-
-Sonia, where is AI network performance hurting GlobalConnect the most right now?`;
+  const FALLBACK_PITCH = `GlobalConnect's AI initiatives are only as reliable as the network underneath them — and right now, inconsistent performance across 47 countries is the bottleneck. Cisco's secure networking for the AI era fixes that end-to-end: guaranteed bandwidth, embedded security, one management plane. Where is the inconsistency hurting you most today?`;
 
   let pitchText = FALLBACK_PITCH;
   try {
@@ -796,20 +783,17 @@ async function toggleMic() {
 
     currentCapture = finalTx.trim();
     if (currentCapture) {
-      // Show what was captured
+      // Show captured text
       document.getElementById('capturedText').textContent = currentCapture;
       document.getElementById('soniaCapture').style.display = 'block';
-      // Add to log
       addToLog('sonia', currentCapture, 'SONIA ABIVEN · CIO (AI)');
-      // Show generate button
-      document.getElementById('generateBtn').style.display = 'inline-flex';
-      document.getElementById('generateBtn').disabled = false;
-      document.getElementById('generateBtn').textContent = '🤖 Generate My Response';
-      setStatus('✅ Captured — click 🤖 to generate your perfect response');
-      document.getElementById('btnHint').textContent = 'Review what was captured above, then click Generate to get your optimal Cisco response';
+      setStatus('⚡ Auto-generating response...');
+      document.getElementById('btnHint').textContent = '⚡ Generating and playing automatically...';
+      // AUTO-GENERATE then AUTO-PLAY
+      generateAndPlay();
     } else {
-      setStatus('Nothing captured — try again');
-      document.getElementById('btnHint').textContent = 'Nothing was captured. Click 🎤 and try again.';
+      setStatus('Nothing captured — click 🎤 and try again');
+      document.getElementById('btnHint').textContent = 'Nothing captured. Click 🎤 and try again.';
     }
   };
 
@@ -1102,22 +1086,30 @@ Reply directly to Sonia. New info only. 25-30 words max.`;
 // ══════════════════════════════════════════════
 //  PLAY — speak the generated response
 // ══════════════════════════════════════════════
+async function generateAndPlay() {
+  await generateResponse();
+  // Small pause so user can read the response, then auto-play
+  setTimeout(() => playResponse(), 500);
+}
+
 function playResponse() {
   if (!generatedResponse) return;
   const btn = document.getElementById('playBtn');
   btn.disabled = true;
   btn.textContent = '⏸ Playing...';
   speakText(generatedResponse, () => {
-    btn.textContent = '▶ Play Again';
+    btn.style.display = 'none';
     btn.disabled = false;
-    // Auto-reset for next question
+    // Auto-reset state
     document.getElementById('soniaCapture').style.display = 'none';
     document.getElementById('generateBtn').style.display = 'none';
     currentCapture = '';
     generatedResponse = '';
-    document.getElementById('btnHint').textContent = 'Click 🎤 to capture Sonia\'s next question';
-    btn.style.display = 'none';
     updateScores();
+    // AUTO-START MIC — listen to Sonia immediately after response plays
+    setStatus('🎤 Listening for Sonia — click Stop when she finishes');
+    document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
+    setTimeout(() => toggleMic(), 400);
   });
 }
 
