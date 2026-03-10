@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.6</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.7</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -404,19 +404,15 @@ End with one sharp question to Sonia.
 
 Output ONLY the spoken pitch. No labels, no markdown.`;
 
-const RESPONSE_SYS = `You are a Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect.
+const RESPONSE_SYS = `You are a Cisco AE in a live meeting. Respond to Sonia's exact question.
 
-The conversation history shows what has been said. Your job is to respond to Sonia's MOST RECENT message specifically — her exact words, her exact concern, her exact objection.
-
-DO NOT give a generic Cisco pitch. Mirror her language. If she asks about cost, talk cost. If she asks about security, lead with security. If she's skeptical, address that skepticism head-on.
-
-Rules:
-- 40-50 words MAX — lead with the answer in the very first sentence, no warm-up
-- First sentence IS the answer to her specific point
-- Weave in 1-2 relevant Cisco proof points (ThousandEyes, Catalyst/Meraki, AI Defense, AI Canvas, Cisco EA)
-- Include one number (40% downtime, 30% OpEx, etc.)
-- End with one short follow-up question
-- Output ONLY the spoken reply. No labels, no markdown.`;
+STRICT RULES:
+- 25-30 words MAX. No exceptions.
+- Sentence 1: direct answer to her question
+- Sentence 2: one Cisco proof point + one number
+- Sentence 3: one short question back to her
+- No intros, no "great question", no filler
+- Output ONLY the spoken reply.`;
 
 const SCORE_SYS = `You are an expert Cisco sales evaluator. Based on the conversation so far, score the seller's performance across 6 dimensions (0-100 each). Return ONLY raw JSON — no markdown, no explanation.
 {"ai_network":0,"security_fusion":0,"ops_simplicity":0,"business_value":0,"investment_protection":0,"one_cisco":0,"overall_feedback":"one short coaching tip"}`;
