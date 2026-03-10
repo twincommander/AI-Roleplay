@@ -249,7 +249,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.2</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.3</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -703,86 +703,74 @@ async function toggleMic() {
 //  GENERATE — perfect Cisco response to Sonia's question
 // ══════════════════════════════════════════════
 // Response bank — multiple answers per topic, rotated to avoid repetition
-// ── RESPONSE BANKS ──────────────────────────────
-// Each topic has unique responses. After 2 on same topic → pivot to close.
-const RESPONSES = {
-  latency: [
-    `ThousandEyes maps every hop — WAN, cloud, inside the site — so your team sees root cause in minutes, not hours. We've cut mean-time-to-resolve 70% at similar manufacturers. Can I show you a live demo of a plant like yours?`,
-    `Catalyst reserves dedicated bandwidth lanes for your quality control and predictive maintenance — AI workloads never compete with regular traffic. 40% less downtime in year one. Worth a deeper look with your network team?`,
-  ],
-  security: [
-    `Cisco AI Defense analyzes every packet at the network layer — no separate console, no extra agent. Threats blocked before they reach your AI workloads. Can we set up a session to map that against your compliance requirements?`,
-    `One security policy enforced everywhere — data center to Southeast Asia edge — automatically. Zero blind spots. Should we get your security team on a call to walk through the architecture?`,
-  ],
-  ops: [
-    `AI Canvas consolidates your 200 locations into one view — Cisco and non-Cisco gear. Customers cut support tickets 40% and OpEx 30%. Can I show your ops team how the dashboard looks for a multi-region deployment like yours?`,
-    `One management plane replaces 6+ consoles. Your team gets faster resolution and less context-switching. What would it mean to get that time back? Let's put a demo on the calendar.`,
-  ],
-  cost: [
-    `Cisco EA bundles networking, security, and management — one predictable price, 47 countries. Customers average 30% OpEx savings year one. Let me put together a rough TCO comparison for your estate — worth 30 minutes?`,
-    `One agreement replaces 4-6 separate contracts. No surprise renewals. I can model the savings against your current spend — can we find time this week for that conversation?`,
-  ],
-  investment: [
-    `EA works alongside everything you already have — no rip-and-replace. You activate Cisco capabilities at your pace. Let me show you how a similar manufacturer adopted this without disrupting their existing infrastructure.`,
-    `Your current gear stays. We layer in ThousandEyes visibility and AI Defense first — lowest risk, fastest ROI. Can we schedule a session with your architecture team to map out the phasing?`,
-  ],
-  visibility: [
-    `ThousandEyes shows whether the issue is your WAN, the internet, or the cloud service — in real time. Your team stops guessing and starts fixing. Can I walk you through a live proof-of-concept on your actual traffic paths?`,
-    `Cross-domain correlation in one view — local network and cloud in the same timeline. Customers cut troubleshooting time 70%. Let's get your team a hands-on look — when works for a 45-minute session?`,
-  ],
-  ai: [
-    `Guaranteed bandwidth SLAs per AI application — quality control and predictive maintenance get priority lanes, always. No more latency-driven production pauses. Can we model this against your actual workload profiles?`,
-    `ThousandEyes monitors your full AI pipeline — data ingestion to inference — and alerts before workflows fail. Would a focused demo on your Southeast Asia plants make sense this week?`,
-  ],
-  general: [
-    `You've validated the pain — performance at the edge, AI workload consistency, operational complexity. Cisco solves all three in one architecture. Let's get your team a tailored demo — can we find 45 minutes this week?`,
-    `One Cisco architecture addresses everything we've discussed: ThousandEyes for visibility, AI Defense for security, AI Canvas for ops, EA for investment protection. Worth getting your team together for a planning session?`,
-  ],
-  // Close is used after 4+ seller turns — hard pivot to demo ask
-  close: [
-    `Based on everything you've shared — Southeast Asia performance, AI workload consistency, operational complexity — I'd love to get your team a tailored Cisco demo. Can we find 45 minutes this week?`,
-    `We've covered the core pain points. I'm confident Cisco solves them. Let's set up a planning session with your network and security leads — I'll bring a solution architect. What does your calendar look like?`,
-    `You've given me a clear picture of GlobalConnect's priorities. The right next step is a live demo mapped to your Southeast Asia sites. Can we get that on the calendar before end of week?`,
-  ]
+// ── CONVERSATION FLOW ────────────────────────────
+// Phase 1 (turns 1-3): probe and understand — NO demo push
+// Phase 4: ask for demo
+// Phase 5+: answer any follow-up fully, then close again
+
+const PROBING = [
+  // Turn 1 — understand scope
+  `That inconsistency is a real signal. When you say remote branches and manufacturing plants struggle — are most of the issues happening on the WAN between sites, or is it inside the plant itself when AI workloads spike?`,
+  // Turn 2 — understand impact  
+  `That helps. And when latency spikes during a critical AI process — quality control, predictive maintenance — what does your team's current troubleshooting process look like? How long does it typically take to identify the root cause?`,
+  // Turn 3 — understand breadth
+  `Got it. Beyond the network performance, is the security posture consistent across those remote and manufacturing sites, or is that another layer of complexity your team is managing separately?`,
+];
+
+const ANSWERS = {
+  // Specific answers to common Sonia follow-up questions
+  howItWorks: `Here's a real example — a European manufacturer with 60+ plants. ThousandEyes showed the issue wasn't their WAN — it was a specific cloud provider routing their AI traffic through a suboptimal path. Their team fixed it in 22 minutes. Previously that same issue took 3 days to diagnose. The difference is correlated visibility across network, cloud, and application in one timeline.`,
+  proof: `A discrete manufacturer with 80 sites moved to Cisco's AI-ready fabric. Before: 14 unplanned outages per quarter affecting AI-driven quality control. After: 3. Mean time-to-resolve dropped from 4 hours to 35 minutes. They ran ThousandEyes, Catalyst, and AI Defense under one Enterprise Agreement — no rip-and-replace of existing infrastructure.`,
+  vsCompetitors: `Most vendors give you visibility into their own stack. ThousandEyes shows the full path — your network, the internet, the cloud provider, and inside the application — regardless of vendor. That's why it identifies root cause where others just show you alerts. Combined with AI Defense fused into the fabric, you get security and performance in one architecture, not two separate tools.`,
+  security: `Cisco AI Defense is embedded in the network fabric itself — it analyzes every packet as traffic flows, not as a separate scan. For your remote plants, that means threats are detected and blocked automatically, with no extra agent to deploy or console to manage. Your security posture is consistent from headquarters to the most remote site.`,
+  cost: `Under the Cisco Enterprise Agreement, everything — networking, security, management — is one predictable price across your entire estate. Customers typically see 30% OpEx reduction in year one, mainly from consolidating 4-6 vendor contracts and cutting the operational overhead your team is experiencing today.`,
+  investment: `Nothing you have gets ripped out. The EA is additive — you activate ThousandEyes visibility first, then layer in AI Defense and AI Canvas at whatever pace makes sense. Most customers start with the two or three sites that hurt the most, prove the value, then expand.`,
 };
 
-const usedResponses = {};
-let sellerTurnCount = 0; // track how many times seller has responded
+const CLOSE = [
+  `Based on what you've shared — the WAN inconsistency, AI workload disruption, troubleshooting overhead — I have a clear picture. The right next step is a working session where I bring a solution architect and we map Cisco's architecture against your actual Southeast Asia and Latin America sites. Can we find 45 minutes this week?`,
+  `I want to make sure we don't waste your time with a generic demo. What I'd propose is a planning session — your network lead, my solution architect, and the specific pain points you've described today. Would that be a better use of your team's time than a standard product walkthrough?`,
+];
 
-function pickResponse(topic) {
-  // After 4 seller turns, always push toward close
-  if (sellerTurnCount >= 4) {
-    if (!usedResponses['close']) usedResponses['close'] = 0;
-    const closeBank = RESPONSES['close'];
-    const closeIdx = usedResponses['close'] % closeBank.length;
-    usedResponses['close']++;
-    return closeBank[closeIdx];
-  }
-  if (!usedResponses[topic]) usedResponses[topic] = 0;
-  const bank = RESPONSES[topic];
-  // If we've exhausted this topic's bank, pivot to close
-  if (usedResponses[topic] >= bank.length) {
-    if (!usedResponses['close']) usedResponses['close'] = 0;
-    const closeBank = RESPONSES['close'];
-    const closeIdx = usedResponses['close'] % closeBank.length;
-    usedResponses['close']++;
-    return closeBank[closeIdx];
-  }
-  const idx = usedResponses[topic];
-  usedResponses[topic]++;
-  return bank[idx];
+const usedResponses = {};
+let sellerTurnCount = 0;
+let closingAttempts = 0;
+
+function pickProbe() {
+  const idx = Math.min(sellerTurnCount - 1, PROBING.length - 1);
+  return PROBING[idx];
 }
 
-function getTopicFromText(text) {
+function pickClose() {
+  const idx = closingAttempts % CLOSE.length;
+  closingAttempts++;
+  return CLOSE[idx];
+}
+
+function getAnswerKey(text) {
   const q = text.toLowerCase();
-  if (q.includes('latency') || q.includes('bandwidth') || q.includes('slow') || q.includes('perform') || q.includes('manufactur') || q.includes('edge') || q.includes('unpredictable') || q.includes('drop') || q.includes('outage')) return 'latency';
-  if (q.includes('security') || q.includes('threat') || q.includes('breach') || q.includes('attack') || q.includes('compliance') || q.includes('vulnerab')) return 'security';
-  if (q.includes('console') || q.includes('manag') || q.includes('complex') || q.includes('operati') || q.includes('team') || q.includes('tool')) return 'ops';
-  if (q.includes('cost') || q.includes('budget') || q.includes('price') || q.includes('roi') || q.includes('saving') || q.includes('spend')) return 'cost';
-  if (q.includes('exist') || q.includes('replac') || q.includes('invest') || q.includes('gear') || q.includes('rip')) return 'investment';
-  if (q.includes('visib') || q.includes('troubleshoot') || q.includes('cloud') || q.includes('path') || q.includes('diagnos') || q.includes('cross')) return 'visibility';
-  if (q.includes('ai') || q.includes('analytic') || q.includes('workflow') || q.includes('inference') || q.includes('model') || q.includes('quality') || q.includes('predictive')) return 'ai';
-  return 'general';
+  if (q.includes('look like') || q.includes('real world') || q.includes('scenario') || q.includes('how does') || q.includes('how would') || q.includes('what does that') || q.includes('example of how')) return 'howItWorks';
+  if (q.includes('customer') || q.includes('proof') || q.includes('case') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('evidence')) return 'proof';
+  if (q.includes('other vendor') || q.includes('competi') || q.includes('compare') || q.includes('differ') || q.includes('vs ') || q.includes('versus') || q.includes('better than')) return 'vsCompetitors';
+  if (q.includes('security') || q.includes('threat') || q.includes('attack') || q.includes('compliance')) return 'security';
+  if (q.includes('cost') || q.includes('budget') || q.includes('price') || q.includes('spend') || q.includes('roi') || q.includes('saving')) return 'cost';
+  if (q.includes('exist') || q.includes('replac') || q.includes('rip') || q.includes('current') || q.includes('already have')) return 'investment';
+  return null;
+}
+
+function pickResponse(topic) {
+  // Turn 1-3: probing only
+  if (sellerTurnCount <= 3) return pickProbe();
+
+  // Turn 4+: check if Sonia is asking for more info — answer first, then close
+  const answerKey = getAnswerKey(currentCapture);
+  if (answerKey && ANSWERS[answerKey]) {
+    // Answer the question, end with soft close
+    return ANSWERS[answerKey] + ` Does that give you the confidence to take a closer look? I'd love to set up a tailored planning session.`;
+  }
+
+  // No specific question — go to close
+  return pickClose();
 }
 
 async function generateResponse() {
@@ -824,8 +812,7 @@ Reply directly to Sonia. New info only. 25-30 words max.`;
 
   // Local smart engine — always unique, keyed to Sonia's exact words
   if (!apiSuccess || !generatedResponse.trim()) {
-    const topic = getTopicFromText(currentCapture);
-    generatedResponse = pickResponse(topic);
+    generatedResponse = pickResponse();
   }
 
   showTyping(false);
