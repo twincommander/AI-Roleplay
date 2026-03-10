@@ -113,8 +113,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 #playBtn{height:44px;padding:0 22px;border-radius:11px;border:none;cursor:pointer;background:linear-gradient(135deg,#00bceb,#0077b6);color:#fff;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;transition:all .2s;display:none;}
 #playBtn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,188,235,.35);}
 #playBtn:disabled{background:var(--surface);color:var(--faint);cursor:default;transform:none;box-shadow:none;}
-#clearBtn{height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);font-size:12px;font-family:'Sora',sans-serif;transition:all .2s;display:none;}
-#clearBtn:hover{border-color:rgba(248,113,113,.4);color:var(--red);}
 
 /* Live transcript pulse */
 #liveTx{font-size:12px;color:var(--cisco);margin-bottom:8px;display:none;font-style:italic;display:flex;align-items:center;gap:6px;}
@@ -231,11 +229,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
     flex: 1;
     min-width: 120px;
   }
-  #clearBtn {
-    height: 48px;
-    font-size: 12px;
-    padding: 0 12px;
-  }
+
   .btn-hint { font-size: 10px; }
 
   /* Play banner */
@@ -255,7 +249,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.8</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.9</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -381,7 +375,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
           </button>
           <button id="generateBtn" onclick="generateResponse()">🤖 Generate My Response</button>
           <button id="playBtn" onclick="playResponse()">▶ Play Response</button>
-          <button id="clearBtn" onclick="clearCapture()">↺ New Question</button>
         </div>
         <div class="btn-hint" id="btnHint">Click 🎤 to start capturing Sonia's question</div>
       </div>
@@ -587,7 +580,6 @@ Sonia, where is AI network performance hurting GlobalConnect the most right now?
   document.getElementById('playBtn').style.display = 'inline-flex';
   document.getElementById('playBtn').textContent = '▶ Play Opening Pitch';
   document.getElementById('btnHint').textContent = 'Click ▶ to play your opening pitch aloud, then capture Sonia\'s response';
-  document.getElementById('clearBtn').style.display = 'none';
 }
 
 // ══════════════════════════════════════════════
@@ -651,7 +643,6 @@ async function toggleMic() {
     btn.querySelector('#micIcon').textContent = '🔴';
     btn.querySelector('#micLabel').textContent = 'Stop (click when Sonia finishes)';
     document.getElementById('playBtn').style.display = 'none';
-    document.getElementById('clearBtn').style.display = 'none';
     setStatus('🎤 Capturing Sonia\'s question — click Stop when she finishes speaking');
     document.getElementById('btnHint').textContent = 'Recording Sonia\'s voice — click the button again when she stops speaking';
   };
@@ -675,7 +666,6 @@ async function toggleMic() {
       document.getElementById('generateBtn').style.display = 'inline-flex';
       document.getElementById('generateBtn').disabled = false;
       document.getElementById('generateBtn').textContent = '🤖 Generate My Response';
-      document.getElementById('clearBtn').style.display = 'inline-flex';
       setStatus('✅ Captured — click 🤖 to generate your perfect response');
       document.getElementById('btnHint').textContent = 'Review what was captured above, then click Generate to get your optimal Cisco response';
     } else {
@@ -791,7 +781,6 @@ function playResponse() {
     document.getElementById('generateBtn').style.display = 'none';
     currentCapture = '';
     generatedResponse = '';
-    document.getElementById('clearBtn').style.display = 'none';
     document.getElementById('btnHint').textContent = 'Click 🎤 to capture Sonia\'s next question';
     btn.style.display = 'none';
     updateScores();
@@ -808,7 +797,6 @@ function clearCapture() {
   document.getElementById('soniaCapture').style.display = 'none';
   document.getElementById('generateBtn').style.display = 'none';
   document.getElementById('playBtn').style.display = 'none';
-  document.getElementById('clearBtn').style.display = 'none';
   document.getElementById('liveTx').style.display = 'none';
   document.getElementById('capturedText').textContent = '';
   document.getElementById('micBtn').classList.remove('ready');
