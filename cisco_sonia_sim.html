@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.7</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v1.8</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -404,14 +404,15 @@ End with one sharp question to Sonia.
 
 Output ONLY the spoken pitch. No labels, no markdown.`;
 
-const RESPONSE_SYS = `You are a Cisco AE in a live meeting. Respond to Sonia's exact question.
+const RESPONSE_SYS = `You are a Cisco AE in a live meeting. Respond ONLY to Sonia's exact question.
 
 STRICT RULES:
 - 25-30 words MAX. No exceptions.
-- Sentence 1: direct answer to her question
-- Sentence 2: one Cisco proof point + one number
+- Sentence 1: direct answer to her specific question — use her exact words back
+- Sentence 2: ONE new Cisco proof point + one number not yet mentioned
 - Sentence 3: one short question back to her
-- No intros, no "great question", no filler
+- NEVER repeat a point already made in this conversation
+- No intros, no "great question", no filler, no "Sonia"
 - Output ONLY the spoken reply.`;
 
 const SCORE_SYS = `You are an expert Cisco sales evaluator. Based on the conversation so far, score the seller's performance across 6 dimensions (0-100 each). Return ONLY raw JSON — no markdown, no explanation.
@@ -709,35 +710,43 @@ async function generateResponse() {
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
-  setStatus('Generating your perfect response...');
+  setStatus('Generating response...');
   showTyping(true);
 
-  // Build score context so AI knows which dimensions to emphasize
-  const scoreCtx = ['ai_network','security_fusion','ops_simplicity','business_value','investment_protection','one_cisco']
-    .map(k => `${k}:${document.getElementById('val_'+k).textContent||0}`)
-    .join(', ');
+  // Build what was already said by the seller — so Claude knows what NOT to repeat
+  const sellerPrior = history
+    .filter(h => h.role === 'me')
+    .map(h => h.content)
+    .join(' | ');
 
-  // Build a clean alternating message history for the API.
-  // Sonia = 'user', seller = 'assistant'. Must strictly alternate.
-  // We exclude Sonia's LAST question from history and instead send it as the
-  // final user message so we can inject the score context cleanly.
-  const priorHistory = history.slice(0, -1); // everything except Sonia's last question
+  // Build clean alternating API messages from full history
+  // Strategy: pair each Sonia question with the seller reply that followed it
   const apiMsgs = [];
-  for (const h of priorHistory) {
-    const role = h.role === 'sonia' ? 'user' : 'assistant';
-    // Skip if this would create consecutive same-role messages
-    if (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === role) continue;
-    apiMsgs.push({ role, content: h.content });
+  for (let i = 0; i < history.length - 1; i++) {
+    const h = history[i];
+    if (h.role === 'me') {
+      // seller turn = assistant
+      apiMsgs.push({ role: 'assistant', content: h.content });
+    } else {
+      // sonia turn = user — only include if previous was assistant (or first)
+      if (apiMsgs.length === 0 || apiMsgs[apiMsgs.length - 1].role === 'assistant') {
+        apiMsgs.push({ role: 'user', content: h.content });
+      }
+    }
   }
-  // Ensure we end on an assistant turn before Sonia speaks (drop trailing user if any)
-  while (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === 'user') apiMsgs.pop();
+  // Must end on assistant before we add Sonia's new question
+  if (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === 'user') {
+    apiMsgs.pop();
+  }
+  // If history only has the opening pitch (role=me), apiMsgs may be empty — that is fine
 
-  // Final user message = Sonia's exact question + score context
+  // Final user message: Sonia's exact words + anti-repeat instruction
   const finalUserMsg = `Sonia just said: "${currentCapture}"
 
-Score context (lower = needs more coverage): ${scoreCtx}
+What you have already said in this conversation (DO NOT repeat any of these points):
+${sellerPrior || 'Nothing yet — this is the first response.'}
 
-Respond SPECIFICALLY to what Sonia said above. Do not give a generic pitch.`;
+Reply ONLY to what Sonia just said above. Different angle, different words, new information.`;
 
   try {
     generatedResponse = await callAPI(
@@ -745,15 +754,9 @@ Respond SPECIFICALLY to what Sonia said above. Do not give a generic pitch.`;
       RESPONSE_SYS
     );
   } catch(e) {
-    // Fallback response
-    generatedResponse = `That's exactly the right question, Sonia, and it gets to the heart of what makes Cisco different. With ThousandEyes deployed across your 47 countries, you get real-time visibility into every network path — so when your AI workloads in Singapore are hitting latency issues, you know before your users do. Cisco Catalyst and Meraki guarantee the bandwidth your AI applications need at every location, from your data center to the most remote branch.
-
-On security, Cisco AI Defense isn't a separate product you manage in yet another console — it's fused directly into the network fabric, analyzing every packet for AI-powered threats automatically. That means your 200 locations are protected without adding operational burden.
-
-Speaking of burden — Cisco AI Canvas consolidates everything into one pane of glass. Our customers cut support tickets by 40 percent and OpEx by 30 percent in year one, while protecting every dollar they've already invested through the Cisco Enterprise Agreement.
-
-That's the One Cisco Story: one architecture, from your data center to your most remote site, built for the AI era. What would a 30 percent reduction in operational costs mean for your transformation roadmap?`;
-    console.log('Using fallback response:', e.message);
+    // Short contextual fallback — not a generic pitch
+    generatedResponse = `Good question. ThousandEyes pinpoints exactly where performance breaks down across your 47 sites. That cut unplanned downtime 40% for similar deployments. Which sites are hurting most right now?`;
+    console.log('Fallback response used:', e.message);
   }
 
   showTyping(false);
