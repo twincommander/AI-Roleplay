@@ -249,7 +249,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.3</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.4</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -514,7 +514,7 @@ function speakText(text, onDone) {
       voices.find(v => v.lang === 'en-US') ||
       voices.find(v => v.lang.startsWith('en-')) || voices[0];
     if (v) u.voice = v;
-    u.rate = 1.15; u.pitch = 0.9; u.volume = 1.0;
+    u.rate = 1.0; u.pitch = 0.9; u.volume = 1.0;
     u.onstart = () => {
       document.getElementById('playBanner').style.display = 'flex';
       document.getElementById('bannerTxt').textContent = '🔊 Your response is playing...';
@@ -709,32 +709,56 @@ async function toggleMic() {
 // Phase 5+: answer any follow-up fully, then close again
 
 const PROBING = [
-  // Turn 1 — understand scope
-  `That inconsistency is a real signal. When you say remote branches and manufacturing plants struggle — are most of the issues happening on the WAN between sites, or is it inside the plant itself when AI workloads spike?`,
-  // Turn 2 — understand impact  
-  `That helps. And when latency spikes during a critical AI process — quality control, predictive maintenance — what does your team's current troubleshooting process look like? How long does it typically take to identify the root cause?`,
-  // Turn 3 — understand breadth
-  `Got it. Beyond the network performance, is the security posture consistent across those remote and manufacturing sites, or is that another layer of complexity your team is managing separately?`,
+  `That inconsistency is a real signal. Are most of the issues happening on the WAN between sites, or inside the plant when AI workloads spike?`,
+  `And when latency hits during quality control or predictive maintenance — how long does it take your team to find root cause today? Walk me through that process.`,
+  `Got it. Is security policy enforced consistently across those remote and manufacturing sites, or is that another set of tools your team manages separately?`,
 ];
 
+// Multiple answers per key so we never repeat verbatim
 const ANSWERS = {
-  // Specific answers to common Sonia follow-up questions
-  howItWorks: `Here's a real example — a European manufacturer with 60+ plants. ThousandEyes showed the issue wasn't their WAN — it was a specific cloud provider routing their AI traffic through a suboptimal path. Their team fixed it in 22 minutes. Previously that same issue took 3 days to diagnose. The difference is correlated visibility across network, cloud, and application in one timeline.`,
-  proof: `A discrete manufacturer with 80 sites moved to Cisco's AI-ready fabric. Before: 14 unplanned outages per quarter affecting AI-driven quality control. After: 3. Mean time-to-resolve dropped from 4 hours to 35 minutes. They ran ThousandEyes, Catalyst, and AI Defense under one Enterprise Agreement — no rip-and-replace of existing infrastructure.`,
-  vsCompetitors: `Most vendors give you visibility into their own stack. ThousandEyes shows the full path — your network, the internet, the cloud provider, and inside the application — regardless of vendor. That's why it identifies root cause where others just show you alerts. Combined with AI Defense fused into the fabric, you get security and performance in one architecture, not two separate tools.`,
-  security: `Cisco AI Defense is embedded in the network fabric itself — it analyzes every packet as traffic flows, not as a separate scan. For your remote plants, that means threats are detected and blocked automatically, with no extra agent to deploy or console to manage. Your security posture is consistent from headquarters to the most remote site.`,
-  cost: `Under the Cisco Enterprise Agreement, everything — networking, security, management — is one predictable price across your entire estate. Customers typically see 30% OpEx reduction in year one, mainly from consolidating 4-6 vendor contracts and cutting the operational overhead your team is experiencing today.`,
-  investment: `Nothing you have gets ripped out. The EA is additive — you activate ThousandEyes visibility first, then layer in AI Defense and AI Canvas at whatever pace makes sense. Most customers start with the two or three sites that hurt the most, prove the value, then expand.`,
+  vsCompetitors: [
+    `Fair challenge. Other vendors show you their stack. ThousandEyes shows the full path — your WAN, the internet hop, the cloud provider's routing, the application — regardless of whose gear is involved. That's the difference between an alert that says "something's wrong" and a timeline that shows exactly where and why. Your team stops guessing.`,
+    `Here's what's actually different. Most single-pane-of-glass tools are single-vendor panes. Cisco AI Canvas manages Cisco and non-Cisco infrastructure, and ThousandEyes sits above all of it. For a mixed environment like yours — legacy plants, modern branches, multiple cloud providers — that matters. You're not locked into ripping anything out to get the visibility.`,
+    `The honest answer is most vendors centralize management of their own products. Cisco's approach is different because ThousandEyes was purpose-built for multi-vendor, multi-cloud, global environments. It was designed assuming you'd have a mix of everything — which is exactly your situation across 47 countries.`,
+  ],
+  simplicity: [
+    `The day-to-day reality: your team gets one timeline showing network, cloud, and application events correlated together. When something breaks in Eastern Europe at 2am, the on-call engineer sees in seconds whether it's the WAN, the cloud path, or inside the plant — without jumping between tools. That's where the 70% reduction in troubleshooting time comes from.`,
+    `Concretely — AI Canvas means one policy pushed to all 200 locations simultaneously. One change, everywhere. Right now you're managing separate tools per region. With Cisco, your team in one time zone covers a site in another without needing local expertise for every tool stack. That's what reduces the operational burden for a global team.`,
+  ],
+  howItWorks: [
+    `Real scenario: a European manufacturer, 60-plus plants. ThousandEyes flagged a latency spike at their Poland plant during a quality control run. The issue wasn't their WAN — a cloud provider had rerouted their AI inference traffic through a congested Frankfurt node. Their team identified and escalated to the provider in 22 minutes. The same type of issue previously took 3 days to diagnose.`,
+    `Here's how it works in practice. ThousandEyes runs synthetic tests and real-user monitoring simultaneously across every network path. When your AI workload at a Southeast Asia plant starts degrading, you see a correlated view — WAN latency, cloud hop timing, application response — in one screen. Your team knows in under 5 minutes whether to call the ISP, escalate to the cloud provider, or fix something local.`,
+  ],
+  proof: [
+    `A discrete manufacturer, 80 sites globally. Before Cisco: 14 unplanned outages per quarter affecting AI-driven quality control, mean time-to-resolve of 4 hours. After: 3 outages per quarter, 35-minute resolution. They adopted ThousandEyes first, then layered in AI Defense and AI Canvas — all under one Enterprise Agreement, no rip-and-replace.`,
+    `One of our automotive customers runs AI-driven predictive maintenance across 35 plants. They had the same WAN-versus-cloud ambiguity problem you're describing. After ThousandEyes deployment, their network team cut cross-domain troubleshooting from half a day to under an hour. That freed up two full-time engineers who were previously just firefighting.`,
+  ],
+  security: [
+    `AI Defense doesn't sit outside the network waiting to scan — it's embedded in the fabric, analyzing traffic as it flows. For your remote plants, that means no extra agent to deploy, no separate policy to manage. The same security posture that protects headquarters automatically extends to your most remote site the moment it connects.`,
+    `The specific problem with perimeter-based models at distributed sites: they only catch threats at the edge. AI Defense inspects east-west traffic inside each site as well — lateral movement, anomalous AI workload behavior, data exfiltration attempts. For manufacturing environments running OT and IT on the same network, that matters enormously.`,
+  ],
+  cost: [
+    `The Enterprise Agreement replaces 4 to 6 separate contracts — networking, security, management tools — with one predictable number across your entire estate. Customers average 30% OpEx reduction in year one, mostly from contract consolidation and the operational savings from having one team manage one platform.`,
+    `The ROI case is straightforward: you're currently paying for multiple tools that don't talk to each other, plus the engineering time to bridge them. EA eliminates the tool sprawl. The 30% OpEx figure comes from both licensing consolidation and the reduction in hours spent on manual troubleshooting across disconnected systems.`,
+  ],
+  investment: [
+    `Nothing leaves. The EA is additive — ThousandEyes runs alongside your existing infrastructure immediately. You don't have to migrate anything to get value. Most customers start with 3 or 4 of their worst-performing sites, demonstrate the ROI, then expand at their own pace.`,
+    `Your existing Cisco gear gets enhanced, your non-Cisco gear stays managed the same way it is today. The integration is at the management and visibility layer, not the hardware layer. You're adding intelligence on top of what you have, not replacing it.`,
+  ],
 };
 
-const CLOSE = [
-  `Based on what you've shared — the WAN inconsistency, AI workload disruption, troubleshooting overhead — I have a clear picture. The right next step is a working session where I bring a solution architect and we map Cisco's architecture against your actual Southeast Asia and Latin America sites. Can we find 45 minutes this week?`,
-  `I want to make sure we don't waste your time with a generic demo. What I'd propose is a planning session — your network lead, my solution architect, and the specific pain points you've described today. Would that be a better use of your team's time than a standard product walkthrough?`,
-];
-
-const usedResponses = {};
+// Track what's been used to avoid repeating
+const usedAnswerIdx = {};
 let sellerTurnCount = 0;
 let closingAttempts = 0;
+let lastAnswerKey = null;
+
+const CLOSE_LINES = [
+  `I have a clear picture of what GlobalConnect is dealing with. The right next step isn't a generic demo — it's a working session where my solution architect maps Cisco's architecture to your actual sites. Can we get 45 minutes on the calendar?`,
+  `What I'd suggest is a focused planning session — your network and security leads, my solution architect, and the specific sites you've described. We build a proof-of-concept plan, not a slide deck. Does that make sense as a next step?`,
+  `You've been direct with me and I'll be direct back — I think we can solve what you've described. The fastest way to prove it is to get your team hands-on with ThousandEyes on your actual traffic. Can we set that up?`,
+  `Let's stop talking about it and show it. I'll bring a solution architect, you bring whoever owns the Southeast Asia and Latin America sites, and we run through exactly how this works on your environment. What does your week look like?`,
+];
 
 function pickProbe() {
   const idx = Math.min(sellerTurnCount - 1, PROBING.length - 1);
@@ -742,34 +766,52 @@ function pickProbe() {
 }
 
 function pickClose() {
-  const idx = closingAttempts % CLOSE.length;
+  const idx = closingAttempts % CLOSE_LINES.length;
   closingAttempts++;
-  return CLOSE[idx];
+  return CLOSE_LINES[idx];
 }
 
 function getAnswerKey(text) {
   const q = text.toLowerCase();
-  if (q.includes('look like') || q.includes('real world') || q.includes('scenario') || q.includes('how does') || q.includes('how would') || q.includes('what does that') || q.includes('example of how')) return 'howItWorks';
-  if (q.includes('customer') || q.includes('proof') || q.includes('case') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('evidence')) return 'proof';
-  if (q.includes('other vendor') || q.includes('competi') || q.includes('compare') || q.includes('differ') || q.includes('vs ') || q.includes('versus') || q.includes('better than')) return 'vsCompetitors';
-  if (q.includes('security') || q.includes('threat') || q.includes('attack') || q.includes('compliance')) return 'security';
+  // Competitor / differentiation questions — most important to detect
+  if (q.includes('other vendor') || q.includes('competi') || q.includes('compare') || q.includes('differ') || q.includes('versus') || q.includes('better than') || q.includes('unique') || q.includes('what sets') || q.includes('claimed') || q.includes('single pane') || q.includes('centralized') || q.includes('sounds simpler')) return 'vsCompetitors';
+  // Day-to-day simplicity / operational reality
+  if (q.includes('simplif') || q.includes('day-to-day') || q.includes('reality') || q.includes('operational') || q.includes('global team') || q.includes('time zone') || q.includes('actually reduc') || q.includes('in practice')) return 'simplicity';
+  // How it works / real scenario
+  if (q.includes('look like') || q.includes('real world') || q.includes('scenario') || q.includes('how would') || q.includes('what does that') || q.includes('in a real') || q.includes('walk me') || q.includes('example of how')) return 'howItWorks';
+  // Proof / customer evidence
+  if (q.includes('customer') || q.includes('proof') || q.includes('case study') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('evidence') || q.includes('bold claim') || q.includes('significant')) return 'proof';
+  // Security
+  if (q.includes('security') || q.includes('threat') || q.includes('attack') || q.includes('compliance') || q.includes('perimeter') || q.includes('posture')) return 'security';
+  // Cost / ROI
   if (q.includes('cost') || q.includes('budget') || q.includes('price') || q.includes('spend') || q.includes('roi') || q.includes('saving')) return 'cost';
-  if (q.includes('exist') || q.includes('replac') || q.includes('rip') || q.includes('current') || q.includes('already have')) return 'investment';
+  // Investment protection
+  if (q.includes('exist') || q.includes('replac') || q.includes('rip') || q.includes('legacy') || q.includes('already have') || q.includes('mix of')) return 'investment';
   return null;
 }
 
-function pickResponse(topic) {
-  // Turn 1-3: probing only
+function pickResponse() {
+  // Turn 1-3: probe only
   if (sellerTurnCount <= 3) return pickProbe();
 
-  // Turn 4+: check if Sonia is asking for more info — answer first, then close
+  // Detect what Sonia is actually asking
   const answerKey = getAnswerKey(currentCapture);
+
   if (answerKey && ANSWERS[answerKey]) {
-    // Answer the question, end with soft close
-    return ANSWERS[answerKey] + ` Does that give you the confidence to take a closer look? I'd love to set up a tailored planning session.`;
+    if (!usedAnswerIdx[answerKey]) usedAnswerIdx[answerKey] = 0;
+    const bank = ANSWERS[answerKey];
+    const idx = usedAnswerIdx[answerKey] % bank.length;
+    usedAnswerIdx[answerKey]++;
+    lastAnswerKey = answerKey;
+    // Answer fully — no tacked-on close line, let the answer stand on its own
+    // Only add soft close if we've answered this same topic before
+    if (idx > 0) {
+      return bank[idx] + ` I think the clearest way to show this working is on your actual environment. Want to set up that session?`;
+    }
+    return bank[idx];
   }
 
-  // No specific question — go to close
+  // Sonia not asking a specific question — pivot to close
   return pickClose();
 }
 
