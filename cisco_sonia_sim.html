@@ -249,7 +249,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.1</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v2.2</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -455,6 +455,7 @@ function showErr(msg) {
 function addToLog(role, text, label) {
   // role: 'sonia' | 'me'
   history.push({ role, content: text, label });
+  if (role === 'me') sellerTurnCount++;
   const log = document.getElementById('chatLog');
   const row = document.createElement('div');
   row.className = 'msg' + (role === 'me' ? ' me' : '');
@@ -702,67 +703,85 @@ async function toggleMic() {
 //  GENERATE — perfect Cisco response to Sonia's question
 // ══════════════════════════════════════════════
 // Response bank — multiple answers per topic, rotated to avoid repetition
+// ── RESPONSE BANKS ──────────────────────────────
+// Each topic has unique responses. After 2 on same topic → pivot to close.
 const RESPONSES = {
   latency: [
-    `ThousandEyes pinpoints exactly where latency spikes — network path, cloud hop, every segment across all 47 countries. Customers cut mean time-to-resolve by 70%. Which sites are worst right now?`,
-    `Catalyst and Meraki guarantee AI-grade bandwidth at every site — manufacturing, edge, remote. ThousandEyes shows the root cause before users notice. Are the drops happening on the WAN or inside the site?`,
-    `Inconsistent latency at edge sites is exactly what Cisco's AI-ready fabric solves — dedicated bandwidth lanes for AI workloads. 40% less unplanned downtime in year one. What's the impact on your production lines?`,
+    `ThousandEyes maps every hop — WAN, cloud, inside the site — so your team sees root cause in minutes, not hours. We've cut mean-time-to-resolve 70% at similar manufacturers. Can I show you a live demo of a plant like yours?`,
+    `Catalyst reserves dedicated bandwidth lanes for your quality control and predictive maintenance — AI workloads never compete with regular traffic. 40% less downtime in year one. Worth a deeper look with your network team?`,
   ],
   security: [
-    `Cisco AI Defense is fused into the network fabric — detects threats at the packet level, no extra console. Protects all 200 sites automatically. What types of threats worry you most?`,
-    `Unlike bolt-on security tools, AI Defense analyzes every packet as it crosses the network. Zero additional consoles, automatic response. Where are your biggest compliance gaps today?`,
-    `One Cisco architecture means your security policy applies everywhere — data center to edge to remote. No blind spots. What's your current mean time to detect a threat?`,
+    `Cisco AI Defense analyzes every packet at the network layer — no separate console, no extra agent. Threats blocked before they reach your AI workloads. Can we set up a session to map that against your compliance requirements?`,
+    `One security policy enforced everywhere — data center to Southeast Asia edge — automatically. Zero blind spots. Should we get your security team on a call to walk through the architecture?`,
   ],
   ops: [
-    `AI Canvas is a single pane of glass for all 200 locations — our customers cut support tickets 40%. How many consoles is your team managing today?`,
-    `One management plane across your entire estate — Cisco and non-Cisco gear. Less context-switching, faster resolution. What's your team's biggest operational time sink?`,
-    `Cisco customers consolidate 6+ tools into AI Canvas. 30% OpEx reduction, 40% fewer tickets. How much time does your team lose on cross-tool troubleshooting?`,
+    `AI Canvas consolidates your 200 locations into one view — Cisco and non-Cisco gear. Customers cut support tickets 40% and OpEx 30%. Can I show your ops team how the dashboard looks for a multi-region deployment like yours?`,
+    `One management plane replaces 6+ consoles. Your team gets faster resolution and less context-switching. What would it mean to get that time back? Let's put a demo on the calendar.`,
   ],
   cost: [
-    `Cisco Enterprise Agreement bundles everything — networking, security, management — one predictable price across 47 countries. Customers see 30% OpEx savings year one. What does your current vendor spend look like?`,
-    `EA customers eliminate surprise renewal costs and renegotiate from strength. One agreement, full estate. What percentage of your IT budget goes to overlapping vendor tools right now?`,
-    `30% OpEx reduction is the average — some customers hit 40%. Unified licensing replaces 4-6 separate contracts. What's driving your budget pressure this year?`,
+    `Cisco EA bundles networking, security, and management — one predictable price, 47 countries. Customers average 30% OpEx savings year one. Let me put together a rough TCO comparison for your estate — worth 30 minutes?`,
+    `One agreement replaces 4-6 separate contracts. No surprise renewals. I can model the savings against your current spend — can we find time this week for that conversation?`,
   ],
   investment: [
-    `Cisco EA works with your existing gear — Cisco and non-Cisco. Modular adoption, no rip-and-replace. What infrastructure are you most protective of?`,
-    `You keep what's working and add Cisco capabilities on top. No forced migration, no forklift upgrades. Which locations would you want to modernize first?`,
-    `Investment protection is a hard requirement for us too. EA lets you adopt at your pace — activate new capabilities when you're ready. What's your refresh cycle looking like?`,
+    `EA works alongside everything you already have — no rip-and-replace. You activate Cisco capabilities at your pace. Let me show you how a similar manufacturer adopted this without disrupting their existing infrastructure.`,
+    `Your current gear stays. We layer in ThousandEyes visibility and AI Defense first — lowest risk, fastest ROI. Can we schedule a session with your architecture team to map out the phasing?`,
   ],
   visibility: [
-    `ThousandEyes gives you end-to-end visibility — local network, internet path, cloud service — all in one view. Instantly shows if the issue is yours or the provider's. What's your average troubleshooting time today?`,
-    `When issues cross local network and cloud services, ThousandEyes correlates both in real time. Your team sees root cause in minutes, not hours. How often are cross-domain issues hitting you?`,
-    `Full-path visibility from your Asia plants to cloud services — ThousandEyes maps every hop. Cuts mean time-to-resolve 70%. Are most issues local or cloud-side?`,
+    `ThousandEyes shows whether the issue is your WAN, the internet, or the cloud service — in real time. Your team stops guessing and starts fixing. Can I walk you through a live proof-of-concept on your actual traffic paths?`,
+    `Cross-domain correlation in one view — local network and cloud in the same timeline. Customers cut troubleshooting time 70%. Let's get your team a hands-on look — when works for a 45-minute session?`,
   ],
   ai: [
-    `Cisco's AI-ready fabric reserves guaranteed bandwidth for AI workloads — your analytics won't compete with regular traffic. What AI applications are most latency-sensitive?`,
-    `AI workloads need consistency, not best-effort. Catalyst guarantees performance SLAs per application across every site. What does a 10ms latency spike cost your operations?`,
-    `ThousandEyes monitors your AI pipeline end-to-end — model inference, data ingestion, API calls — and alerts before workflows fail. What's running on those edge AI nodes today?`,
+    `Guaranteed bandwidth SLAs per AI application — quality control and predictive maintenance get priority lanes, always. No more latency-driven production pauses. Can we model this against your actual workload profiles?`,
+    `ThousandEyes monitors your full AI pipeline — data ingestion to inference — and alerts before workflows fail. Would a focused demo on your Southeast Asia plants make sense this week?`,
   ],
   general: [
-    `ThousandEyes shows every network path in real time across all 47 countries. Customers resolve issues 70% faster. What's your most painful troubleshooting challenge right now?`,
-    `One Cisco Story: one architecture from data center to edge, one vendor, one EA. Simplifies everything. Where do you want to start — network, security, or ops?`,
-    `Cisco AI Defense plus AI Canvas plus ThousandEyes — three tools, one platform, zero extra consoles. What would your team do with 40% fewer support tickets?`,
+    `You've validated the pain — performance at the edge, AI workload consistency, operational complexity. Cisco solves all three in one architecture. Let's get your team a tailored demo — can we find 45 minutes this week?`,
+    `One Cisco architecture addresses everything we've discussed: ThousandEyes for visibility, AI Defense for security, AI Canvas for ops, EA for investment protection. Worth getting your team together for a planning session?`,
+  ],
+  // Close is used after 4+ seller turns — hard pivot to demo ask
+  close: [
+    `Based on everything you've shared — Southeast Asia performance, AI workload consistency, operational complexity — I'd love to get your team a tailored Cisco demo. Can we find 45 minutes this week?`,
+    `We've covered the core pain points. I'm confident Cisco solves them. Let's set up a planning session with your network and security leads — I'll bring a solution architect. What does your calendar look like?`,
+    `You've given me a clear picture of GlobalConnect's priorities. The right next step is a live demo mapped to your Southeast Asia sites. Can we get that on the calendar before end of week?`,
   ]
 };
-const usedResponses = {}; // track which index used per topic
+
+const usedResponses = {};
+let sellerTurnCount = 0; // track how many times seller has responded
 
 function pickResponse(topic) {
+  // After 4 seller turns, always push toward close
+  if (sellerTurnCount >= 4) {
+    if (!usedResponses['close']) usedResponses['close'] = 0;
+    const closeBank = RESPONSES['close'];
+    const closeIdx = usedResponses['close'] % closeBank.length;
+    usedResponses['close']++;
+    return closeBank[closeIdx];
+  }
   if (!usedResponses[topic]) usedResponses[topic] = 0;
   const bank = RESPONSES[topic];
-  const idx = usedResponses[topic] % bank.length;
+  // If we've exhausted this topic's bank, pivot to close
+  if (usedResponses[topic] >= bank.length) {
+    if (!usedResponses['close']) usedResponses['close'] = 0;
+    const closeBank = RESPONSES['close'];
+    const closeIdx = usedResponses['close'] % closeBank.length;
+    usedResponses['close']++;
+    return closeBank[closeIdx];
+  }
+  const idx = usedResponses[topic];
   usedResponses[topic]++;
   return bank[idx];
 }
 
 function getTopicFromText(text) {
   const q = text.toLowerCase();
-  if (q.includes('latency') || q.includes('bandwidth') || q.includes('slow') || q.includes('perform') || q.includes('manufactur') || q.includes('edge') || q.includes('unpredictable') || q.includes('drop')) return 'latency';
+  if (q.includes('latency') || q.includes('bandwidth') || q.includes('slow') || q.includes('perform') || q.includes('manufactur') || q.includes('edge') || q.includes('unpredictable') || q.includes('drop') || q.includes('outage')) return 'latency';
   if (q.includes('security') || q.includes('threat') || q.includes('breach') || q.includes('attack') || q.includes('compliance') || q.includes('vulnerab')) return 'security';
   if (q.includes('console') || q.includes('manag') || q.includes('complex') || q.includes('operati') || q.includes('team') || q.includes('tool')) return 'ops';
   if (q.includes('cost') || q.includes('budget') || q.includes('price') || q.includes('roi') || q.includes('saving') || q.includes('spend')) return 'cost';
-  if (q.includes('exist') || q.includes('replac') || q.includes('invest') || q.includes('gear') || q.includes('rip') || q.includes('current infra')) return 'investment';
-  if (q.includes('visib') || q.includes('troubleshoot') || q.includes('cloud') || q.includes('path') || q.includes('diagnos')) return 'visibility';
-  if (q.includes('ai') || q.includes('analytic') || q.includes('workflow') || q.includes('inference') || q.includes('model')) return 'ai';
+  if (q.includes('exist') || q.includes('replac') || q.includes('invest') || q.includes('gear') || q.includes('rip')) return 'investment';
+  if (q.includes('visib') || q.includes('troubleshoot') || q.includes('cloud') || q.includes('path') || q.includes('diagnos') || q.includes('cross')) return 'visibility';
+  if (q.includes('ai') || q.includes('analytic') || q.includes('workflow') || q.includes('inference') || q.includes('model') || q.includes('quality') || q.includes('predictive')) return 'ai';
   return 'general';
 }
 
