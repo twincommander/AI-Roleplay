@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.0</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.1</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -310,6 +310,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
     <div class="top-right">
       <div id="scoreDisplay"><span style="color:var(--muted)">Score: </span><span id="totalNum" style="color:var(--cisco);font-family:'JetBrains Mono',monospace;font-weight:700">0</span><span style="color:var(--faint);font-family:'JetBrains Mono',monospace">/600</span></div>
       <div id="winBadge">🎯 Demo Secured!</div>
+      <select id="voiceSelect" onchange="setVoice(this.value)" style="background:rgba(0,188,235,.1);border:1px solid rgba(0,188,235,.25);color:var(--cisco);border-radius:7px;padding:4px 7px;font-size:11px;font-family:'Sora',sans-serif;cursor:pointer;max-width:140px;">
+        <option value="">🎙 Voice...</option>
+      </select>
       <button class="top-btn" id="ttsBtn" onclick="toggleTTS()">🔊 Audio On</button>
     </div>
   </div>
@@ -452,7 +455,68 @@ let finalTx = '';
 const synth = window.speechSynthesis;
 let voices = [];
 
-function loadVoices() { voices = synth.getVoices(); }
+let selectedVoiceName = null;
+
+// Priority-ordered list: most natural first
+const VOICE_PRIORITY = [
+  'Google UK English Male','Google US English',
+  'Ava (Enhanced)','Alex (Enhanced)','Tom (Enhanced)','Daniel (Enhanced)',
+  'Nathan (Enhanced)','Evan (Enhanced)','Samantha (Enhanced)','Aaron (Enhanced)',
+  'Nicky (Enhanced)',
+  'Alex','Daniel','Tom','Nathan','Evan','Aaron','Samantha',
+  'Microsoft Guy Online (Natural)','Microsoft Ryan Online (Natural)',
+  'Microsoft Andrew Online (Natural)','Microsoft Eric Online (Natural)',
+  'Microsoft David Desktop','Microsoft Mark Desktop',
+];
+
+function pickBestVoice() {
+  const en = voices.filter(v => v.lang.startsWith('en'));
+  if (selectedVoiceName) return en.find(v => v.name === selectedVoiceName) || null;
+  for (const name of VOICE_PRIORITY) {
+    const m = en.find(v => v.name === name);
+    if (m) return m;
+  }
+  return en.find(v => v.lang === 'en-US') || en[0] || null;
+}
+
+function populateVoiceDropdown() {
+  const sel = document.getElementById('voiceSelect');
+  if (!sel) return;
+  const en = voices.filter(v => v.lang.startsWith('en'));
+  if (!en.length) return;
+  const best = pickBestVoice();
+  sel.innerHTML = '<option value="">✨ Auto (best)</option>';
+  en.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    const star = v.name.includes('Enhanced') || v.name.includes('Natural') || v.name.includes('Online') ? '⭐ ' : '';
+    opt.textContent = star + v.name;
+    if (!selectedVoiceName && best && v.name === best.name) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function setVoice(name) { selectedVoiceName = name || null; }
+
+// Text naturalizer — makes TTS sound less robotic
+function naturalizeText(raw) {
+  return raw
+    .replace(/\bAI\b/g, 'A.I.')
+    .replace(/\bEA\b/g, 'Enterprise Agreement')
+    .replace(/\bWAN\b/g, 'wan')
+    .replace(/\bROI\b/g, 'R.O.I.')
+    .replace(/\bOpEx\b/gi, 'OPEX')
+    .replace(/\bOT\b/g, 'O.T.')
+    .replace(/(\d+)%/g, '$1 percent')
+    .replace(/\s*—\s*/g, ', ')
+    .replace(/\*\*/g, '').replace(/\*/g, '')
+    .trim();
+}
+
+function loadVoices() {
+  voices = synth.getVoices();
+  populateVoiceDropdown();
+}
 synth.onvoiceschanged = loadVoices;
 loadVoices();
 setTimeout(loadVoices, 600);
@@ -530,18 +594,15 @@ function speakText(text, onDone) {
   if (!ttsOn) { if (onDone) onDone(); return; }
   synth.cancel();
   setTimeout(() => {
-    const u = new SpeechSynthesisUtterance(text);
-    loadVoices();
-    const v =
-      voices.find(v => v.name === 'Daniel' && v.lang.startsWith('en')) ||
-      voices.find(v => v.name.includes('Daniel') && v.lang.startsWith('en')) ||
-      voices.find(v => v.name === 'Alex') ||
-      voices.find(v => v.name.includes('Google UK English Male')) ||
-      voices.find(v => v.name.includes('Fred')) ||
-      voices.find(v => v.lang === 'en-US') ||
-      voices.find(v => v.lang.startsWith('en-')) || voices[0];
+    const processed = naturalizeText(text);
+    const u = new SpeechSynthesisUtterance(processed);
+    const v = pickBestVoice();
     if (v) u.voice = v;
-    u.rate = 1.12; u.pitch = 0.9; u.volume = 1.0;
+    // Tune rate per voice type — neural voices need slightly slower rate
+    const isNeural = v && (v.name.includes('Enhanced') || v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Google'));
+    u.rate = isNeural ? 1.05 : 1.12;
+    u.pitch = 0.92;
+    u.volume = 1.0;
     u.onstart = () => {
       document.getElementById('playBanner').style.display = 'flex';
       document.getElementById('bannerTxt').textContent = '🔊 Your response is playing...';
