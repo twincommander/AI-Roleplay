@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.2</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.3</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -854,30 +854,6 @@ async function toggleMic() {
       document.getElementById('soniaCapture').style.display = 'block';
       addToLog('sonia', currentCapture, 'SONIA ABIVEN · CIO (AI)');
 
-      // Pitch mode: Sonia just said hello back — now play the opening pitch
-      if (window._pitchMode) {
-        window._pitchMode = false;
-        const pitchText = window._pendingPitch;
-        currentCapture = '';
-        document.getElementById('soniaCapture').style.display = 'none';
-        setStatus('🎤 Playing your opening pitch...');
-        document.getElementById('btnHint').textContent = '⏸ Opening pitch playing...';
-        addToLog('me', pitchText, 'YOU · OPENING PITCH');
-        const btn = document.getElementById('playBtn');
-        btn.style.display = 'none';
-        setTimeout(() => {
-          speakText(pitchText, () => {
-            currentCapture = '';
-            generatedResponse = '';
-            updateScores();
-            setStatus('🎤 Listening for Sonia — click Stop when she finishes');
-            document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
-            setTimeout(() => toggleMic(), 400);
-          });
-        }, 300);
-        return;
-      }
-
       // Normal mode: auto-generate and play
       setStatus('⚡ Auto-generating response...');
       document.getElementById('btnHint').textContent = '⚡ Generating and playing automatically...';
@@ -1191,19 +1167,28 @@ function playResponse() {
   btn.disabled = true;
   btn.textContent = '⏸ Playing...';
 
-  // Hello mode: say greeting → listen to Sonia's hello back → THEN play pitch
+  // Hello mode: play greeting then immediately chain to opening pitch
   if (window._helloMode) {
     window._helloMode = false;
-    window._pitchMode = true;  // next mic stop → auto-play pitch, not a normal response
     speakText(generatedResponse, () => {
-      btn.style.display = 'none';
       btn.disabled = false;
-      currentCapture = '';
-      generatedResponse = '';
-      // Auto-start mic so Sonia can say hello back
-      setStatus('🎤 Listening — let Sonia respond, then click Stop');
-      document.getElementById('btnHint').textContent = '🔴 Sonia is responding — click Stop when she finishes';
-      setTimeout(() => toggleMic(), 500);
+      const pitchText = window._pendingPitch;
+      addToLog('me', pitchText, 'YOU · OPENING PITCH');
+      generatedResponse = pitchText;
+      btn.textContent = '▶ Playing Opening Pitch...';
+      btn.disabled = true;
+      setTimeout(() => {
+        speakText(pitchText, () => {
+          btn.style.display = 'none';
+          btn.disabled = false;
+          currentCapture = '';
+          generatedResponse = '';
+          updateScores();
+          setStatus('🎤 Listening for Sonia — click Stop when she finishes');
+          document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
+          setTimeout(() => toggleMic(), 400);
+        });
+      }, 300);
     });
     return;
   }
