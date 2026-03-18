@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.4</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.5</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -966,6 +966,28 @@ const ANSWERS = {
   ],
 };
 
+// ── CONFIRM — Sonia is ready to move forward ─────
+const CONFIRM_LINES = [
+  `Perfect. Here's what I need from you: the name of your network lead, the three sites you want to start with, and 45 minutes next week. I'll send a proposed agenda by end of day today — specific to Southeast Asia and Latin America. Does Tuesday or Wednesday work?`,
+  `I'll send the proposed agenda today — pilot scope, milestones, what we need from your team, and how we measure success at each stage. Can you connect me with your network lead so we can prep the technical detail before the session?`,
+  `Excellent. The planning session will cover: assessment of your three priority sites, ThousandEyes deployment plan, AI Defense rollout sequence, and 90-day success metrics. I'll have that to you within the hour. Who on your team should be in the room?`,
+];
+let confirmIdx = 0;
+function pickConfirm() {
+  return CONFIRM_LINES[confirmIdx++ % CONFIRM_LINES.length];
+}
+
+// ── PILOT PLAN — timeline and rollout questions ───
+const PILOT_LINES = [
+  `We start with a two-week assessment of your three worst sites — no disruption, ThousandEyes runs alongside existing tools. It's live in under an hour per site. Your team sees the first correlated insights the same day. At 90 days we review the data together and make the EA decision. You control the pace.`,
+  `Typical timeline: week one is discovery — your network lead works with my solution architect to map the three pilot sites. Week two ThousandEyes is deployed, zero downtime, no change to existing infrastructure. By week four you have a baseline. At 90 days you decide whether to expand. No commitment beyond the pilot.`,
+  `The rollout is designed to be invisible to your operations. ThousandEyes activates in monitoring mode first — read-only, no traffic changes. Your team sees results before we touch any policy. AI Defense comes second, also in detect-only mode initially. Your operations leads set the pace for when we go active. Minimal disruption is built into the methodology.`,
+];
+let pilotIdx = 0;
+function pickPilot() {
+  return PILOT_LINES[pilotIdx++ % PILOT_LINES.length];
+}
+
 // ── CLOSE LINES — varied, never repeated ─────────
 const CLOSE_LINES = [
   `I have a clear picture of what GlobalConnect is up against — the distributed AI performance, the security policy gaps, the operational overhead across time zones. The right next step is a working session where my solution architect maps Cisco's architecture directly to your Southeast Asia and Latin America sites. Can we get 45 minutes on the calendar?`,
@@ -979,6 +1001,19 @@ const CLOSE_LINES = [
 function getAnswerKey(text) {
   const q = text.toLowerCase();
 
+  // BUYING SIGNALS — Sonia is ready to move forward (check FIRST)
+  if (q.includes('pilot') || q.includes('kick off') || q.includes('move forward') ||
+      q.includes('planning session') || q.includes('bring in') || q.includes('technical lead') ||
+      q.includes('next week') || q.includes('schedule') || q.includes('proposed agenda') ||
+      q.includes('confirm the session') || q.includes('willing to') || q.includes('let's aim') ||
+      q.includes('send me') || q.includes('what would you need from') || q.includes('how soon could')) return 'confirm';
+
+  // TIMELINE / ROLLOUT — how does implementation work
+  if (q.includes('timeline') || q.includes('rollout') || q.includes('disruption') ||
+      q.includes('how long') || q.includes('implementation') || q.includes('time frame') ||
+      q.includes('realistic') || q.includes('when can') || q.includes('how soon') ||
+      q.includes('milestone') || q.includes('what to expect')) return 'pilot_plan';
+
   // Security policy enforcement + operational workload (Sonia's persistent question)
   if ((q.includes('policy') && (q.includes('enforce') || q.includes('reconcil') || q.includes('align') || q.includes('consistent'))) ||
       (q.includes('security') && (q.includes('workload') || q.includes('day-to-day') || q.includes('manual') || q.includes('overhead') || q.includes('non-cisco') || q.includes('non cisco')))) return 'security_fused';
@@ -990,13 +1025,13 @@ function getAnswerKey(text) {
   if (q.includes('other vendor') || q.includes('other solution') || q.includes('competi') || q.includes('arista') || q.includes('juniper') || q.includes('versus') || q.includes('compare') || q.includes('what sets') || q.includes('claimed') || q.includes('also claim') || q.includes('sounds simpler')) return 'vsCompetitors';
 
   // Customer proof
-  if (q.includes('customer') || q.includes('example') || q.includes('proof') || q.includes('case') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('bold claim') || q.includes('caveat') || q.includes('ramp up')) return 'proof';
+  if (q.includes('customer') || q.includes('example') || q.includes('proof') || q.includes('case') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('bold claim') || q.includes('caveat') || q.includes('ramp up') || q.includes('validated') || q.includes('specific customer') || q.includes('cfo') || q.includes('justify') || q.includes('real data') || q.includes('numbers') || q.includes('caught something') || q.includes('slipped past')) return 'proof';
 
   // Business value / ROI
-  if (q.includes('cost') || q.includes('budget') || q.includes('roi') || q.includes('saving') || q.includes('measurable') || q.includes('quantif') || q.includes('financial') || q.includes('business impact') || q.includes('bottom line')) return 'business_value';
+  if (q.includes('cost') || q.includes('budget') || q.includes('roi') || q.includes('saving') || q.includes('measurable') || q.includes('quantif') || q.includes('financial') || q.includes('business impact') || q.includes('bottom line') || q.includes('energy saving') || q.includes('support ticket') || q.includes('operational cost') || q.includes('mean time')) return 'business_value';
 
   // Investment protection
-  if (q.includes('exist') || q.includes('legacy') || q.includes('replac') || q.includes('rip') || q.includes('already have') || q.includes('mix of') || q.includes('current infra') || q.includes('hesitant') || q.includes('start over')) return 'investment';
+  if (q.includes('exist') || q.includes('legacy') || q.includes('replac') || q.includes('rip') || q.includes('already have') || q.includes('mix of') || q.includes('current infra') || q.includes('hesitant') || q.includes('start over') || q.includes('third party') || q.includes('non cisco') || q.includes('non-cisco') || q.includes('falls apart') || q.includes('true unified') || q.includes('in practice')) return 'investment';
 
   // One Cisco / holistic / single vendor
   if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') || q.includes('end-to-end') || q.includes('portfolio') || q.includes('trusted partner') || q.includes('single partner') || q.includes('one partner') || q.includes('breadth') || q.includes('comprehensive')) return 'one_cisco';
@@ -1065,11 +1100,18 @@ function getMissingDimension() {
 }
 
 function pickResponse() {
-  // probing phase: turns 1-3 of REAL conversation (not counting hello/pitch)
-  if (sellerTurnCount <= 3) return pickProbe() || pickClose();
+  // probing phase: turns 1, 2, 3 after pitch (sellerTurnCount 1-3)
+  // sellerTurnCount is read BEFORE addToLog increments it, so count=1 → probe[0], etc.
+  if (sellerTurnCount >= 1 && sellerTurnCount <= 3) return pickProbe() || pickClose();
 
   // Detect what Sonia is specifically asking
   const answerKey = getAnswerKey(currentCapture);
+
+  // Buying signals — Sonia ready to move forward
+  if (answerKey === 'confirm') return pickConfirm();
+  // Timeline / pilot questions
+  if (answerKey === 'pilot_plan') return pickPilot();
+
   if (answerKey && ANSWERS[answerKey]) {
     const answer = pickAnswer(answerKey);
     if (allDimensionsCovered()) {
@@ -1203,13 +1245,13 @@ function playResponse() {
           btn.disabled = false;
           currentCapture = '';
           generatedResponse = '';
-          sellerTurnCount = 0; // reset so probing starts at turn 1
+          sellerTurnCount = 1; // reset so probing starts at turn 1 (index 0)
           updateScores();
           setStatus('🎤 Listening for Sonia — click Stop when she finishes');
           document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
           setTimeout(() => toggleMic(), 400);
         });
-      }, 300);
+      }, 50);
     });
     return;
   }
