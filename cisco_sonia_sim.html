@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.3</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.4</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -1009,8 +1009,9 @@ function getAnswerKey(text) {
 
 // Track usage and dimension coverage
 const usedAnswerIdx = {};
-let sellerTurnCount = 0;
+let sellerTurnCount = 0;   // counts only real conversation turns (reset after hello+pitch)
 let closingAttempts = 0;
+let conversationStarted = false; // true after pitch plays, before first real response
 
 // Track which of the 6 dimensions have been addressed
 const dimensionsCovered = {
@@ -1054,39 +1055,31 @@ function pickClose() {
 }
 
 function getMissingDimension() {
-  // Return an answer that covers the first uncovered dimension
   if (!dimensionsCovered.security_fused) return pickAnswer('security_fused');
   if (!dimensionsCovered.ops_simplified) return pickAnswer('ops_simplified');
   if (!dimensionsCovered.business_value) return pickAnswer('business_value');
   if (!dimensionsCovered.investment) return pickAnswer('investment');
   if (!dimensionsCovered.one_cisco) return pickAnswer('one_cisco');
   if (!dimensionsCovered.distributed_ai) return pickAnswer('distributed');
-  return null;
+  return pickClose(); // all covered — go to close
 }
 
 function pickResponse() {
-  // Turn 1-3: probe to understand Sonia's situation
-  if (sellerTurnCount <= 3) return pickProbe();
+  // probing phase: turns 1-3 of REAL conversation (not counting hello/pitch)
+  if (sellerTurnCount <= 3) return pickProbe() || pickClose();
 
   // Detect what Sonia is specifically asking
   const answerKey = getAnswerKey(currentCapture);
-
   if (answerKey && ANSWERS[answerKey]) {
     const answer = pickAnswer(answerKey);
-    // If all 6 dimensions now covered, append a soft close
     if (allDimensionsCovered()) {
-      return answer + ` — and that's the full picture. I'd love to make this concrete for GlobalConnect. Can we set up that planning session?`;
+      return answer + ` — that's the full picture. I'd love to make this concrete for GlobalConnect. Can we set up that planning session?`;
     }
     return answer;
   }
 
-  // No specific question detected — cover a missing dimension first, then close
-  if (!allDimensionsCovered()) {
-    return getMissingDimension();
-  }
-
-  // All dimensions covered — go to close
-  return pickClose();
+  // No keyword match — cover a missing dimension or close
+  return getMissingDimension(); // now guaranteed non-null
 }
 
 function pickProbe() {
@@ -1095,7 +1088,12 @@ function pickProbe() {
 }
 
 async function generateResponse() {
-  if (!currentCapture) return;
+  if (!currentCapture) {
+    // Nothing captured — restart mic so user isn't stuck
+    setStatus('Nothing captured — listening again');
+    setTimeout(() => toggleMic(), 400);
+    return;
+  }
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Generating...';
@@ -1132,8 +1130,12 @@ Reply directly to Sonia. New info only. 25-30 words max.`;
   }
 
   // Local smart engine — always unique, keyed to Sonia's exact words
-  if (!apiSuccess || !generatedResponse.trim()) {
+  if (!apiSuccess || !generatedResponse || !generatedResponse.trim()) {
     generatedResponse = pickResponse();
+  }
+  // Final safety net — should never be empty, but if it is, use a close line
+  if (!generatedResponse || !generatedResponse.trim()) {
+    generatedResponse = pickClose();
   }
 
   showTyping(false);
@@ -1156,9 +1158,27 @@ Reply directly to Sonia. New info only. 25-30 words max.`;
 //  PLAY — speak the generated response
 // ══════════════════════════════════════════════
 async function generateAndPlay() {
-  await generateResponse();
-  // Small pause so user can read the response, then auto-play
-  setTimeout(() => playResponse(), 500);
+  try {
+    await generateResponse();
+    // Small pause so user can see the text, then auto-play
+    setTimeout(() => {
+      if (generatedResponse && generatedResponse.trim()) {
+        playResponse();
+      } else {
+        // Something went wrong — force a close line and play it
+        generatedResponse = pickClose();
+        addToLog('me', generatedResponse, 'YOU · CISCO AE (AI-Generated)');
+        playResponse();
+      }
+    }, 500);
+  } catch(err) {
+    console.error('generateAndPlay error:', err);
+    showTyping(false);
+    // Fail-safe: use local engine and continue
+    generatedResponse = pickClose();
+    addToLog('me', generatedResponse, 'YOU · CISCO AE (AI-Generated)');
+    setTimeout(() => playResponse(), 500);
+  }
 }
 
 function playResponse() {
@@ -1183,6 +1203,7 @@ function playResponse() {
           btn.disabled = false;
           currentCapture = '';
           generatedResponse = '';
+          sellerTurnCount = 0; // reset so probing starts at turn 1
           updateScores();
           setStatus('🎤 Listening for Sonia — click Stop when she finishes');
           document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
