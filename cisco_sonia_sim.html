@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.5</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.6</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -668,6 +668,9 @@ async function runMicTest() {
   statusTxt.textContent = 'Requesting microphone access...';
 
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('MediaDevices API not available — use Chrome or Safari 14+');
+    }
     micTestStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     micAllowed = true;
 
@@ -722,11 +725,15 @@ async function runMicTest() {
 
   } catch(e) {
     btn.disabled = false;
-    btn.textContent = '🎤 Test Microphone First';
+    btn.textContent = '🎤 Try Again';
     statusDot.style.background = 'var(--red)';
-    statusTxt.textContent = '❌ Permission denied — click 🔒 in address bar → allow Microphone';
-    note.textContent = '⚠️ Mic blocked — check browser address bar permissions';
-    preview.textContent = 'You must allow microphone access to use this app';
+    const msg = e.name === 'NotAllowedError' ? '❌ Permission denied — click 🔒 in address bar → Allow Microphone, then refresh'
+              : e.name === 'NotFoundError' ? '❌ No microphone found — check your device has a mic connected'
+              : e.name === 'NotSupportedError' ? '❌ Browser not supported — use Chrome on desktop or Safari 14+ on iPhone'
+              : '❌ ' + (e.message || 'Mic error — try refreshing the page');
+    statusTxt.textContent = msg;
+    note.textContent = '⚠️ Mic blocked — see instructions above';
+    preview.textContent = '';
   }
 }
 
@@ -916,7 +923,9 @@ const ANSWERS = {
   // DIMENSION 1 — Distributed AI / network complexity
   distributed: [
     `Here's how Cisco reframes that complexity. Catalyst and Meraki create a consistent AI-ready fabric at every site — headquarters, remote plant, edge location — with guaranteed bandwidth lanes dedicated to your AI workloads. Quality control and predictive maintenance always get priority, even during production spikes. That's not possible with best-effort networking.`,
-    `A European manufacturer with 60-plus plants had the same unpredictability you're describing — latency spikes mid-shift disrupting AI analytics. After deploying Cisco's AI-ready fabric with ThousandEyes, their Southeast Asia plants went from 14 unplanned disruptions per quarter to 3. The AI workloads got reserved bandwidth, so production spikes stopped competing with analytics traffic.`,
+    `The bandwidth guarantee is dynamic, not static. Cisco's Application Policy Infrastructure Controller — APIC — continuously monitors AI workload traffic and adjusts bandwidth allocation in real time. When your computer vision tasks spike at a manufacturing site, the fabric automatically deprioritizes background traffic and protects the AI flow. No manual intervention, no tickets to your team.`,
+    `Real-world scale example: a European manufacturer with 60-plus plants deployed Cisco's AI-ready fabric across their Southeast Asia sites. Before: 14 AI workload disruptions per quarter from bandwidth contention during production shifts. After: 3. Resolution time dropped from hours to 22 minutes because ThousandEyes showed exactly which cloud path was congesting the AI inference traffic — not a WAN issue at all. That's the difference between alerting and diagnosis.`,
+    `The latency guarantee works through explicit traffic classes baked into the fabric. Your AI inference traffic gets a dedicated queue — it cannot be starved by bulk data transfers or background sync. We've deployed this in automotive plants running real-time quality control at 30-millisecond thresholds. It holds under full production load because the prioritization is at the hardware level, not a software overlay.`,
   ],
 
   // DIMENSION 2 — Security fused into the network
@@ -1001,12 +1010,23 @@ const CLOSE_LINES = [
 function getAnswerKey(text) {
   const q = text.toLowerCase();
 
-  // BUYING SIGNALS — Sonia is ready to move forward (check FIRST)
-  if (q.includes('pilot') || q.includes('kick off') || q.includes('move forward') ||
-      q.includes('planning session') || q.includes('bring in') || q.includes('technical lead') ||
-      q.includes('next week') || q.includes('schedule') || q.includes('proposed agenda') ||
-      q.includes('confirm the session') || q.includes('willing to') || q.includes("let's aim") ||
-      q.includes('send me') || q.includes('what would you need from') || q.includes('how soon could')) return 'confirm';
+  // BUYING SIGNALS — require specific multi-word phrases to avoid false positives
+  const isBuying =
+    q.includes('kick off') ||
+    q.includes('move forward') ||
+    q.includes('planning session') ||
+    q.includes('proposed agenda') ||
+    q.includes('confirm the session') ||
+    q.includes("let's aim for") ||
+    q.includes('what would you need from us') ||
+    q.includes('willing to bring') ||
+    q.includes('bring in my') ||
+    q.includes('bring my team') ||
+    q.includes('send me the agenda') ||
+    q.includes("let's get") ||
+    (q.includes('pilot') && (q.includes('start') || q.includes('run') || q.includes('begin') || q.includes('scope') || q.includes('propose') || q.includes('kick'))) ||
+    (q.includes('next week') && (q.includes('session') || q.includes('meeting') || q.includes('schedule') || q.includes('calendar') || q.includes('time')));
+  if (isBuying) return 'confirm';
 
   // TIMELINE / ROLLOUT — how does implementation work
   if (q.includes('timeline') || q.includes('rollout') || q.includes('disruption') ||
@@ -1036,8 +1056,14 @@ function getAnswerKey(text) {
   // One Cisco / holistic / single vendor
   if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') || q.includes('end-to-end') || q.includes('portfolio') || q.includes('trusted partner') || q.includes('single partner') || q.includes('one partner') || q.includes('breadth') || q.includes('comprehensive')) return 'one_cisco';
 
-  // Distributed AI / network performance
-  if (q.includes('distributed') || q.includes('latency') || q.includes('bandwidth') || q.includes('performance') || q.includes('ai workload') || q.includes('manufactur') || q.includes('edge') || q.includes('remote site')) return 'distributed';
+  // Distributed AI / network performance / bandwidth guarantees
+  if (q.includes('distributed') || q.includes('latency') || q.includes('bandwidth') ||
+      q.includes('performance') || q.includes('ai workload') || q.includes('manufactur') ||
+      q.includes('edge') || q.includes('remote site') || q.includes('guarantee') ||
+      q.includes('dynamic') || q.includes('at scale') || q.includes('real world') ||
+      q.includes('in a lab') || q.includes('predictive analytics') || q.includes('computer vision') ||
+      q.includes('nonnegotiable') || q.includes('non-negotiable') || q.includes('critical flow') ||
+      q.includes('low latency') || q.includes('spike') || q.includes('surge')) return 'distributed';
 
   return null;
 }
