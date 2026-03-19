@@ -257,7 +257,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v4.2</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v4.3</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -296,7 +296,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
       <div id="micPreviewTxt" style="font-size:11px;color:var(--faint);font-style:italic;min-height:16px;"></div>
     </div>
   </div>
-  <p class="s-note" id="splashNote">iPhone: Tap 🎤 after each response — mic starts on your tap only (iOS requirement) · Download a Siri Enhanced voice in Settings → Accessibility → Spoken Content → Voices</p>
+  <p class="s-note" id="splashNote">Best in Chrome · Mic permission needed once · Keep this tab active</p>
 </div>
 
 <!-- APP -->
@@ -1321,8 +1321,8 @@ function readyToListen(msg) {
 
 async function generateResponse() {
   if (!currentCapture) {
-    setStatus('Nothing captured — tap 🎤 and try again');
-    readyToListen('Nothing captured — tap 🎤 and try again');
+    setStatus('Nothing captured — listening again');
+    setTimeout(() => toggleMic(), 400);
     return;
   }
   const btn = document.getElementById('generateBtn');
@@ -1443,7 +1443,9 @@ function playResponse() {
           generatedResponse = '';
           sellerTurnCount = 1; // reset so probing starts at turn 1 (index 0)
           updateScores();
-          readyToListen('👇 Tap the mic button — Sonia is about to respond');
+          setStatus('🎤 Listening for Sonia — click Stop when she finishes');
+          document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
+          setTimeout(() => toggleMic(), 400);
         });
       }, 50);
     });
@@ -1459,7 +1461,9 @@ function playResponse() {
     currentCapture = '';
     generatedResponse = '';
     updateScores();
-    readyToListen('👇 Tap the mic button — ready for Sonia');
+    setStatus('🎤 Listening for Sonia — click Stop when she finishes');
+    document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
+    setTimeout(() => toggleMic(), 400);
   });
 }
 
