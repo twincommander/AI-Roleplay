@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.6</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.9</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -1006,64 +1006,145 @@ const CLOSE_LINES = [
 ];
 
 // ── DETECTION ──────────────────────────────────
-// Priority order matters — more specific matches first
+// Rules:
+// 1. CONFIRM only fires on UNAMBIGUOUS buying phrases — never single words like "pilot", "move forward"
+// 2. COMPETITOR/OPS questions are checked BEFORE simplicity keywords to avoid "simplicity" → ops
+// 3. "legacy", "in practice", "exist" etc only fire investment if NO security/ops context
 function getAnswerKey(text) {
   const q = text.toLowerCase();
 
-  // BUYING SIGNALS — require specific multi-word phrases to avoid false positives
+  // ── BUYING SIGNALS ────────────────────────────────────────────────────────
+  // STRICT: require phrases that ONLY appear when Sonia is committing, not asking
   const isBuying =
     q.includes('kick off') ||
-    q.includes('move forward') ||
-    q.includes('planning session') ||
     q.includes('proposed agenda') ||
     q.includes('confirm the session') ||
-    q.includes("let's aim for") ||
-    q.includes('what would you need from us') ||
-    q.includes('willing to bring') ||
-    q.includes('bring in my') ||
-    q.includes('bring my team') ||
     q.includes('send me the agenda') ||
-    q.includes("let's get") ||
-    (q.includes('pilot') && (q.includes('start') || q.includes('run') || q.includes('begin') || q.includes('scope') || q.includes('propose') || q.includes('kick'))) ||
-    (q.includes('next week') && (q.includes('session') || q.includes('meeting') || q.includes('schedule') || q.includes('calendar') || q.includes('time')));
+    q.includes('willing to schedule') ||
+    q.includes('bring in my technical') ||
+    q.includes('bring my technical') ||
+    q.includes('what would you need from us to') ||
+    q.includes('ready to move') ||
+    (q.includes('planning session') && (q.includes("let's") || q.includes('schedule') || q.includes('set up'))) ||
+    (q.includes('next week') && (q.includes('schedule') || q.includes('calendar'))) ||
+    (q.includes('pilot') && (q.includes('run a') || q.includes('start a') || q.includes('begin a') || q.includes('scope a') || q.includes('propose a')));
   if (isBuying) return 'confirm';
 
-  // TIMELINE / ROLLOUT — how does implementation work
-  if (q.includes('timeline') || q.includes('rollout') || q.includes('disruption') ||
-      q.includes('how long') || q.includes('implementation') || q.includes('time frame') ||
-      q.includes('realistic') || q.includes('when can') || q.includes('how soon') ||
-      q.includes('milestone') || q.includes('what to expect')) return 'pilot_plan';
+  // ── COMPETITOR / DIFFERENTIATION ─────────────────────────────────────────
+  // Must come AFTER ops_simplified — "compared to centralized management" → ops, not competitor
+  // Only fires on clear competitor signals (named vendors, "other vendors", "stacks up")
+  if (q.includes('other vendor') || q.includes('other solution') || q.includes('other approach') ||
+      q.includes('stack up') || q.includes('stacks up') || q.includes('competi') ||
+      q.includes('arista') || q.includes('juniper') || q.includes('versus') ||
+      q.includes('what sets cisco') || q.includes('how is cisco different') ||
+      q.includes('similar claims') || q.includes('heard similar') ||
+      q.includes('also claim') || q.includes('sounds simpler') ||
+      q.includes('on paper') || q.includes('other approaches') ||
+      q.includes('what makes cisco different') || q.includes('what makes cisco unique') ||
+      (q.includes('compared to') && !opsContext) ||
+      (q.includes('compare to') && !opsContext) ||
+      (q.includes('compare') && !opsContext && !q.includes('by comparison'))) return 'vsCompetitors';
 
-  // Security policy enforcement + operational workload (Sonia's persistent question)
-  if ((q.includes('policy') && (q.includes('enforce') || q.includes('reconcil') || q.includes('align') || q.includes('consistent'))) ||
-      (q.includes('security') && (q.includes('workload') || q.includes('day-to-day') || q.includes('manual') || q.includes('overhead') || q.includes('non-cisco') || q.includes('non cisco')))) return 'security_fused';
+  // ── TIMELINE / ROLLOUT ───────────────────────────────────────────────────
+  // How does deployment actually work — but NOT "how long until we see results" (that's proof)
+  if ((q.includes('timeline') && !q.includes('customer')) ||
+      q.includes('rollout') || q.includes('disruption') ||
+      q.includes('how soon could your') || q.includes('go live') ||
+      q.includes('when can you start') || q.includes('milestone') ||
+      (q.includes('how long') && (q.includes('deploy') || q.includes('activat') || q.includes('set up') || q.includes('onboard'))) ||
+      (q.includes('implementation') && !q.includes('example'))) return 'pilot_plan';
 
-  // Operational simplicity / day-to-day workload questions
-  if (q.includes('day-to-day') || q.includes('operational workload') || q.includes('simplif') || q.includes('global team') || q.includes('time zone') || q.includes('truly simplif') || q.includes('actually reduc') || q.includes('centralized management') || q.includes('management plane')) return 'ops_simplified';
+  // ── SECURITY POLICY / FABRIC ──────────────────────────────────────────────
+  // Policy enforcement, agent-free, new site onboarding, adaptive threats
+  // Also catches "how does that actually work" when agent/cloud/real-time are in context
+  const securityContext =
+    (q.includes('policy') && (q.includes('enforce') || q.includes('reconcil') || q.includes('align') || q.includes('applied') || q.includes('consistent') || q.includes('adapt'))) ||
+    (q.includes('security') && (q.includes('immediately') || q.includes('real time') || q.includes('new site') || q.includes('comes online') || q.includes('agent') || q.includes('adaptive') || q.includes('emerging') || q.includes('evolving') || q.includes('threat'))) ||
+    q.includes('east west') || q.includes('lateral movement') ||
+    q.includes('perimeter') || q.includes('appliance') ||
+    (q.includes('agent') && (q.includes('deploy') || q.includes('need') || q.includes('require') || q.includes('separate'))) ||
+    (q.includes('how does that') && q.includes('work') && (q.includes('legacy') || q.includes('cloud') || q.includes('prem') || q.includes('iot'))) ||
+    (q.includes('how does it') && q.includes('work') && (q.includes('legacy') || q.includes('on prem') || q.includes('iot') || q.includes('mix')));
+  if (securityContext) return 'security_fused';
 
-  // Competitor comparison
-  if (q.includes('other vendor') || q.includes('other solution') || q.includes('competi') || q.includes('arista') || q.includes('juniper') || q.includes('versus') || q.includes('compare') || q.includes('what sets') || q.includes('claimed') || q.includes('also claim') || q.includes('sounds simpler')) return 'vsCompetitors';
+  // Explicit competitor signals override ops context — fire vsCompetitors immediately
+  const explicitCompetitor =
+    q.includes('other vendor') || q.includes('other solution') || q.includes('other approach') ||
+    q.includes('other approaches') || q.includes('stacks up') || q.includes('stack up') ||
+    q.includes('arista') || q.includes('juniper') || q.includes('competi') ||
+    q.includes('what sets cisco') || q.includes('how is cisco different') ||
+    q.includes('what makes cisco different') || q.includes('similar claims') ||
+    q.includes('heard similar') || q.includes('also claim');
+  if (explicitCompetitor) return 'vsCompetitors';
 
-  // Customer proof
-  if (q.includes('customer') || q.includes('example') || q.includes('proof') || q.includes('case') || q.includes('before and after') || q.includes('actually achiev') || q.includes('concrete') || q.includes('bold claim') || q.includes('caveat') || q.includes('ramp up') || q.includes('validated') || q.includes('specific customer') || q.includes('cfo') || q.includes('justify') || q.includes('real data') || q.includes('numbers') || q.includes('caught something') || q.includes('slipped past')) return 'proof';
+  // ── OPS SIMPLICITY ───────────────────────────────────────────────────────
+  // Unified management, operational overhead, tool complexity
+  // "simplif" alone is NOT enough — require context or paired with management/ops
+  const opsContext =
+    q.includes('day-to-day') || q.includes('operational overhead') ||
+    q.includes('operational workload') || q.includes('global team') ||
+    q.includes('time zone') || q.includes('centralized management') ||
+    q.includes('management plane') || q.includes('single pane') ||
+    q.includes('tool hopping') || q.includes('unified management') ||
+    q.includes('unified visibility') ||
+    (q.includes('simplif') && (q.includes('management') || q.includes('operations') || q.includes('network') || q.includes('overhead') || q.includes('truly'))) ||
+    (q.includes('complex') && (q.includes('manage') || q.includes('overhead') || q.includes('distributed')));
+  if (opsContext) return 'ops_simplified';
 
-  // Business value / ROI
-  if (q.includes('cost') || q.includes('budget') || q.includes('roi') || q.includes('saving') || q.includes('measurable') || q.includes('quantif') || q.includes('financial') || q.includes('business impact') || q.includes('bottom line') || q.includes('energy saving') || q.includes('support ticket') || q.includes('operational cost') || q.includes('mean time')) return 'business_value';
+  // ── CUSTOMER PROOF ────────────────────────────────────────────────────────
+  if (q.includes('case study') || q.includes('before and after') ||
+      q.includes('actually achiev') || q.includes('bold claim') ||
+      q.includes('validated') || q.includes('specific customer') ||
+      q.includes('real data') || q.includes('real world') ||
+      q.includes('not just theory') || q.includes('slipped past') ||
+      q.includes('caught something') || q.includes('ramp up') ||
+      q.includes('hidden cost') || q.includes('hidden hurdle') ||
+      (q.includes('example') && (q.includes('customer') || q.includes('company') || q.includes('manufacturer') || q.includes('give me'))) ||
+      (q.includes('data') && (q.includes('show') || q.includes('point to') || q.includes('share'))) ||
+      (q.includes('proof') && !q.includes('proof of concept')) ||
+      (q.includes('numbers') && (q.includes('show') || q.includes('back') || q.includes('real'))) ||
+      (q.includes('customer') && q.includes('similar'))) return 'proof';
 
-  // Investment protection
-  if (q.includes('exist') || q.includes('legacy') || q.includes('replac') || q.includes('rip') || q.includes('already have') || q.includes('mix of') || q.includes('current infra') || q.includes('hesitant') || q.includes('start over') || q.includes('third party') || q.includes('non cisco') || q.includes('non-cisco') || q.includes('falls apart') || q.includes('true unified') || q.includes('in practice')) return 'investment';
+  // ── BUSINESS VALUE / ROI ─────────────────────────────────────────────────
+  if (q.includes('roi') || q.includes('budget') ||
+      q.includes('cost saving') || q.includes('opex') ||
+      q.includes('bottom line') || q.includes('quantif') ||
+      q.includes('financial') || q.includes('business impact') ||
+      q.includes('energy saving') || q.includes('support ticket') ||
+      q.includes('operational cost') || q.includes('mean time to') ||
+      q.includes('justify to') ||
+      (q.includes('measurable') && (q.includes('benefit') || q.includes('result') || q.includes('outcome') || q.includes('impact')))) return 'business_value';
 
-  // One Cisco / holistic / single vendor
-  if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') || q.includes('end-to-end') || q.includes('portfolio') || q.includes('trusted partner') || q.includes('single partner') || q.includes('one partner') || q.includes('breadth') || q.includes('comprehensive')) return 'one_cisco';
+  // ── INVESTMENT PROTECTION ─────────────────────────────────────────────────
+  // Only fire if NOT already matched by security/ops above
+  if (q.includes('rip and replace') || q.includes('rip-and-replace') ||
+      q.includes('existing investment') || q.includes('protect our invest') ||
+      q.includes('already have') || q.includes('current infrastructure') ||
+      q.includes('hesitant') || q.includes('start over') ||
+      q.includes('third party device') || q.includes('non-cisco device') ||
+      q.includes('falls apart') ||
+      (q.includes('legacy') && (q.includes('integrat') || q.includes('coexist') || q.includes('alongside') || q.includes('mix') || q.includes('both'))) ||
+      (q.includes('exist') && (q.includes('gear') || q.includes('infra') || q.includes('tool') || q.includes('invest'))) ||
+      (q.includes('without') && (q.includes('replac') || q.includes('migrat') || q.includes('rip'))) ||
+      (q.includes('seamless') && (q.includes('integrat') || q.includes('deploy') || q.includes('activat')))) return 'investment';
 
-  // Distributed AI / network performance / bandwidth guarantees
+  // ── ONE CISCO STORY ───────────────────────────────────────────────────────
+  if (q.includes('one cisco') || q.includes('single vendor') || q.includes('holistic') ||
+      q.includes('portfolio breadth') || q.includes('trusted partner') ||
+      q.includes('end to end solution') || q.includes('comprehensive solution') ||
+      q.includes('single architecture') || q.includes('one architecture')) return 'one_cisco';
+
+  // ── DISTRIBUTED AI / NETWORK PERFORMANCE ─────────────────────────────────
   if (q.includes('distributed') || q.includes('latency') || q.includes('bandwidth') ||
-      q.includes('performance') || q.includes('ai workload') || q.includes('manufactur') ||
-      q.includes('edge') || q.includes('remote site') || q.includes('guarantee') ||
-      q.includes('dynamic') || q.includes('at scale') || q.includes('real world') ||
-      q.includes('in a lab') || q.includes('predictive analytics') || q.includes('computer vision') ||
-      q.includes('nonnegotiable') || q.includes('non-negotiable') || q.includes('critical flow') ||
-      q.includes('low latency') || q.includes('spike') || q.includes('surge')) return 'distributed';
+      q.includes('ai workload') || q.includes('manufactur') ||
+      q.includes('edge location') || q.includes('remote site') ||
+      q.includes('guarantee') || q.includes('guaranteed') ||
+      q.includes('predictive analytics') || q.includes('computer vision') ||
+      q.includes('low latency') || q.includes('spike') || q.includes('surge') ||
+      q.includes('nonnegotiable') || q.includes('non-negotiable') ||
+      q.includes('critical flow') || q.includes('traffic pattern') ||
+      (q.includes('performance') && (q.includes('ai') || q.includes('workload') || q.includes('plant') || q.includes('site') || q.includes('network'))) ||
+      (q.includes('how does cisco') && q.includes('handle'))) return 'distributed';
 
   return null;
 }
