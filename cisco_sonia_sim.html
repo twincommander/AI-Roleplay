@@ -112,6 +112,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 #micBtn{height:44px;padding:0 20px;border-radius:11px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;transition:all .2s;background:var(--surface);border:1px solid var(--border);color:var(--muted);}
 #micBtn.listening{background:linear-gradient(135deg,#7f1d1d,#dc2626);border-color:transparent;color:#fff;box-shadow:0 0 20px rgba(220,38,38,.4);}
 #micBtn.ready{background:rgba(0,188,235,.12);border-color:rgba(0,188,235,.3);color:var(--cisco);}
+#micBtn.tap-me{background:linear-gradient(135deg,#00bceb,#0077b6);border-color:transparent;color:#fff;box-shadow:0 0 0 0 rgba(0,188,235,.7);animation:tapPulse 1.2s infinite;}
+@keyframes tapPulse{0%{box-shadow:0 0 0 0 rgba(0,188,235,.7);}70%{box-shadow:0 0 0 14px rgba(0,188,235,0);}100%{box-shadow:0 0 0 0 rgba(0,188,235,0);}}
 .mic-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:blink 1s infinite;}
 #generateBtn{height:44px;padding:0 22px;border-radius:11px;border:none;cursor:pointer;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;transition:all .2s;display:none;}
 #generateBtn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,58,237,.4);}
@@ -255,7 +257,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v4.1</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v4.2</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -294,7 +296,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
       <div id="micPreviewTxt" style="font-size:11px;color:var(--faint);font-style:italic;min-height:16px;"></div>
     </div>
   </div>
-  <p class="s-note" id="splashNote">Mac: use Chrome for best voice quality · iPhone: Settings → Accessibility → Spoken Content → Voices → English → download Siri voice for natural sound</p>
+  <p class="s-note" id="splashNote">iPhone: Tap 🎤 after each response — mic starts on your tap only (iOS requirement) · Download a Siri Enhanced voice in Settings → Accessibility → Spoken Content → Voices</p>
 </div>
 
 <!-- APP -->
@@ -808,6 +810,7 @@ async function startSim() {
 // ══════════════════════════════════════════════
 async function toggleMic() {
   const btn = document.getElementById('micBtn');
+  btn.classList.remove('tap-me');
 
   if (isListening) {
     recog && recog.stop();
@@ -860,6 +863,7 @@ async function toggleMic() {
   recog.onstart = () => {
     isListening = true;
     micAllowed = true;
+    btn.classList.remove('tap-me');
     btn.classList.add('listening');
     btn.querySelector('#micIcon').textContent = '🔴';
     btn.querySelector('#micLabel').textContent = 'Stop (click when Sonia finishes)';
@@ -1301,11 +1305,24 @@ function pickProbe() {
   return PROBING[idx];
 }
 
+function readyToListen(msg) {
+  // iOS Safari: SpeechRecognition MUST be started from a direct user tap.
+  // Never call toggleMic() from setTimeout — it will throw service-not-allowed.
+  // Instead: pulse the mic button and prompt the user to tap it.
+  const micBtn = document.getElementById('micBtn');
+  micBtn.classList.remove('listening');
+  micBtn.classList.add('tap-me');
+  micBtn.querySelector('#micIcon').textContent = '🎤';
+  micBtn.querySelector('#micLabel').textContent = 'Tap to Listen to Sonia';
+  micBtn.disabled = false;
+  setStatus(msg || '👇 Tap the mic button to listen to Sonia');
+  document.getElementById('btnHint').textContent = '👇 Tap the button below when ready to capture Sonia';
+}
+
 async function generateResponse() {
   if (!currentCapture) {
-    // Nothing captured — restart mic so user isn't stuck
-    setStatus('Nothing captured — listening again');
-    setTimeout(() => toggleMic(), 400);
+    setStatus('Nothing captured — tap 🎤 and try again');
+    readyToListen('Nothing captured — tap 🎤 and try again');
     return;
   }
   const btn = document.getElementById('generateBtn');
@@ -1426,9 +1443,7 @@ function playResponse() {
           generatedResponse = '';
           sellerTurnCount = 1; // reset so probing starts at turn 1 (index 0)
           updateScores();
-          setStatus('🎤 Listening for Sonia — click Stop when she finishes');
-          document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
-          setTimeout(() => toggleMic(), 400);
+          readyToListen('👇 Tap the mic button — Sonia is about to respond');
         });
       }, 50);
     });
@@ -1444,10 +1459,7 @@ function playResponse() {
     currentCapture = '';
     generatedResponse = '';
     updateScores();
-    // AUTO-START MIC — listen to Sonia immediately after response plays
-    setStatus('🎤 Listening for Sonia — click Stop when she finishes');
-    document.getElementById('btnHint').textContent = '🔴 Auto-listening — click Stop when Sonia finishes speaking';
-    setTimeout(() => toggleMic(), 400);
+    readyToListen('👇 Tap the mic button — ready for Sonia');
   });
 }
 
