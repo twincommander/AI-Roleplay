@@ -255,7 +255,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);height
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v3.9</span></div>
+  <div class="s-tag">Cisco · Live Sales Coach &nbsp;·&nbsp; <span style="opacity:.6">v4.0</span></div>
   <h1 class="s-title">Real Sonia. <span>Perfect Answers.</span></h1>
   <p class="s-sub">Two-computer setup: Sonia is live on Computer 1. You are on Computer 2. The app listens to Sonia's questions and instantly generates your optimal Cisco response — targeting 100% on all 6 scoring dimensions.</p>
   <p class="s-hint">The opening Cisco pitch plays automatically · Then mic captures whatever Sonia asks · App generates your perfect response · You deliver it</p>
@@ -421,22 +421,29 @@ Write a 30-word MAX opening. One sentence on Cisco's edge for AI, one sharp ques
 
 Output ONLY the spoken words.`;
 
-const RESPONSE_SYS = `You are a Cisco Account Executive in a live meeting with Sonia Abiven, CIO (AI) of GlobalConnect.
+const RESPONSE_SYS = `You are a senior Cisco Account Executive in a live discovery meeting with Sonia Abiven, CIO (AI) of GlobalConnect — 47 countries, major AI transformation, mixed Cisco and non-Cisco infrastructure.
 
-Your responses are scored on 6 dimensions — weave the most relevant ones into every answer:
-1. Distributed AI: reframe complexity as opportunity, show how Cisco enables reliable AI at every site
-2. Security fused: embedded AI Defense in the fabric — not a bolt-on, consistent across all sites including non-Cisco gear
-3. Ops simplified: AI Canvas unified management, one policy push, 40% fewer tickets, frees engineering time
-4. Business value: specific numbers — 40% downtime reduction, 30% OpEx savings, real customer examples
-5. Investment protection: EA is additive, works with existing gear, no rip-and-replace, phased adoption
-6. One Cisco Story: explicitly name it — one architecture, ThousandEyes + Catalyst + Meraki + AI Defense + AI Canvas working as one platform, data center to edge, one vendor accountable for all layers
+You are scored on 6 dimensions. Weave the MOST RELEVANT ones into every answer, using this exact language:
 
-RULES:
-- Directly answer what Sonia specifically asked — use her language
-- 30-35 words max
-- Never repeat a point already made
-- No tacked-on close phrases unless all 6 dimensions have been covered
-- Output ONLY the spoken reply. No labels, no markdown.`;
+1. DISTRIBUTED AI — Do NOT describe complexity as a problem. REFRAME: "GlobalConnect's distributed footprint is exactly where Cisco's architecture creates competitive advantage." Reference: AI-ready fabric, guaranteed bandwidth lanes, Wi-Fi 7 at the edge, reliable AI everywhere.
+
+2. SECURITY FUSED — Position as "the indispensable foundation for digital resilience in the AI era." Language: AI Defense fused into the fabric (not bolted on), real-time adaptation to AI-powered threats, compliance-ready, consistent enforcement everywhere automatically.
+
+3. OPS SIMPLIFIED — Frame as "strategic IT enablement, not just efficiency." Language: AI Canvas unified management, real-time analytics and automation, frees your team from firefighting to drive innovation, 40% fewer support tickets.
+
+4. BUSINESS VALUE — Tie to FINANCIAL outcomes, not just operational. Language: 30% OpEx savings (equals $X million for your scale), 40% downtime reduction translates to production output and revenue, energy savings, specific customer numbers.
+
+5. INVESTMENT PROTECTION — Frame as "strategic advantage, not just protection." Language: one unified EA license covering on-prem, cloud, and hybrid — no per-site surprises; minimize risk, maximize the value of existing assets; activation not migration.
+
+6. ONE CISCO STORY — MUST SAY "One Cisco Story" by name at least once per session. Language: "This is the One Cisco Story — one architecture, one vendor accountable for all layers, ThousandEyes to AI Canvas to AI Defense, data center to your most remote plant. No other vendor can deliver this end-to-end."
+
+STRICT RULES:
+- Answer Sonia's EXACT question using her own words
+- 45-55 words max — enough to be substantive, short enough to sound conversational
+- NEVER repeat a point or stat already made in this conversation (check prior messages)
+- If you have already addressed a topic, pivot to an uncovered dimension
+- Never use "I'd love to" or "Does that give you confidence" — those sound scripted
+- Output ONLY the spoken words. No labels, no markdown.`;
 
 const SCORE_SYS = `You are an expert Cisco sales evaluator. Based on the conversation so far, score the seller's performance across 6 dimensions (0-100 each). Return ONLY raw JSON — no markdown, no explanation.
 {"ai_network":0,"security_fusion":0,"ops_simplicity":0,"business_value":0,"investment_protection":0,"one_cisco":0,"overall_feedback":"one short coaching tip"}`;
@@ -920,58 +927,68 @@ const PROBING = [
 // Multiple variants per key — rotated to avoid repetition
 const ANSWERS = {
 
-  // DIMENSION 1 — Distributed AI / network complexity
+  // SYNTHESIS — One Cisco Story moment: when Sonia asks "what is our most critical challenge"
+  synthesis: [
+    `Here is what I heard: AI initiatives blocked by unpredictable performance, fragmented security across 200 sites, and engineering teams firefighting instead of innovating. This is exactly the challenge the One Cisco Story was designed to solve — one architecture, ThousandEyes to AI Canvas to AI Defense, from your data center to your most remote plant. No other vendor delivers this end-to-end. That's why GlobalConnect needs Cisco.`,
+    `Your most critical challenge is scaling AI reliably across 47 countries while your team manages five different toolsets and two different security models. The One Cisco Story collapses all of that. One EA license, one management plane through AI Canvas, one security policy enforced automatically by AI Defense in the fabric. ThousandEyes gives you visibility no point solution vendor can match. This is what enables AI everywhere — not just at headquarters.`,
+    `I've heard three things blocking GlobalConnect's AI ambition: inconsistent performance at the edge, security policy gaps at remote sites, and engineering overhead that slows everything down. Cisco's answer is the One Cisco Story — one integrated architecture that reframes all three from problems into solved. Guaranteed AI bandwidth lanes, embedded digital resilience, and one operations center managing the full estate. This is the only end-to-end platform built specifically for the AI era.`,
+  ],
+
+  // DIMENSION 1 — Distributed AI: reframe as opportunity, not problem
   distributed: [
-    `Here's how Cisco reframes that complexity. Catalyst and Meraki create a consistent AI-ready fabric at every site — headquarters, remote plant, edge location — with guaranteed bandwidth lanes dedicated to your AI workloads. Quality control and predictive maintenance always get priority, even during production spikes. That's not possible with best-effort networking.`,
-    `The bandwidth guarantee is dynamic, not static. Cisco's Application Policy Infrastructure Controller — APIC — continuously monitors AI workload traffic and adjusts bandwidth allocation in real time. When your computer vision tasks spike at a manufacturing site, the fabric automatically deprioritizes background traffic and protects the AI flow. No manual intervention, no tickets to your team.`,
-    `Real-world scale example: a European manufacturer with 60-plus plants deployed Cisco's AI-ready fabric across their Southeast Asia sites. Before: 14 AI workload disruptions per quarter from bandwidth contention during production shifts. After: 3. Resolution time dropped from hours to 22 minutes because ThousandEyes showed exactly which cloud path was congesting the AI inference traffic — not a WAN issue at all. That's the difference between alerting and diagnosis.`,
-    `The latency guarantee works through explicit traffic classes baked into the fabric. Your AI inference traffic gets a dedicated queue — it cannot be starved by bulk data transfers or background sync. We've deployed this in automotive plants running real-time quality control at 30-millisecond thresholds. It holds under full production load because the prioritization is at the hardware level, not a software overlay.`,
+    `GlobalConnect's distributed footprint across 47 countries is exactly where Cisco's architecture creates competitive advantage — not a burden. Catalyst and Meraki lay guaranteed bandwidth lanes at every site, including Wi-Fi 7 at the edge. Your AI workloads get dedicated traffic classes that cannot be starved during production spikes. Reliable AI everywhere, not just at headquarters.`,
+    `The bandwidth guarantee is dynamic. Cisco's policy engine monitors AI workload traffic continuously and adjusts allocation in real time — when computer vision tasks spike at a plant, background traffic is automatically deprioritized. ThousandEyes then shows you exactly where the bottleneck is: your WAN, a cloud provider's routing, or inside the site. Your team resolves in minutes, not hours.`,
+    `Real-world scale: a European manufacturer with 60-plus plants had AI workload disruptions every few days. After deploying Cisco's AI-ready fabric with ThousandEyes, their team pinpointed a cloud provider routing issue in 22 minutes — same problem previously took three days. AI workloads got reserved bandwidth so production spikes stopped competing with analytics traffic. That is what enabling AI everywhere looks like in practice.`,
+    `The latency guarantee is enforced at the hardware level — explicit traffic queues baked into the fabric, not a software overlay. We've held 30-millisecond thresholds in automotive plants running real-time quality control under full production load. For GlobalConnect, that means your predictive maintenance and AI-driven analytics run reliably whether the site is in São Paulo, Osaka, or a remote factory with intermittent WAN connectivity.`,
   ],
 
-  // DIMENSION 2 — Security fused into the network
+  // DIMENSION 2 — Security: digital resilience, AI-powered threats, compliance
   security_fused: [
-    `Cisco AI Defense is embedded in the network fabric — it analyzes every packet as traffic flows, not as a separate scan waiting at the perimeter. For your remote plants, that means consistent policy enforcement without deploying an agent at each site. One policy, pushed once, applies everywhere the moment a site connects. Legacy and modern gear alike.`,
-    `The specific problem with perimeter-based and appliance-centric models at distributed sites: they only protect the edge, and they require manual reconciliation when you have mixed environments. AI Defense inspects east-west traffic inside each site as well — lateral movement, anomalous AI workload behavior, policy drift — automatically. Your team stops manually aligning policies across 200 locations.`,
-    `On your specific question about non-Cisco devices: AI Defense enforces policy at the network layer, not the device layer. It doesn't matter if the endpoint is a Cisco switch or a legacy OT controller — the traffic passes through the fabric and gets inspected and policy-applied consistently. That's what removes the manual reconciliation burden from your global team.`,
+    `Cisco AI Defense is the indispensable foundation for digital resilience in the AI era — fused directly into the network fabric, not bolted on as a separate product. It adapts in real time to AI-powered threats as they evolve, enforcing consistent policy automatically the moment a site connects. No agents to deploy, no manual reconciliation. Your compliance posture is consistent from headquarters to your most remote plant.`,
+    `The specific failure of perimeter and appliance models at distributed sites: they only protect the edge and require manual policy reconciliation across mixed environments. AI Defense inspects east-west traffic inside each site — lateral movement, anomalous AI workload behavior, policy drift — automatically. Your team stops aligning policies manually across 200 locations and starts managing exceptions, not configurations.`,
+    `For sites with unreliable connectivity or legacy OT: AI Defense enforces policy at the network layer, not the device layer. A legacy OT controller, a modern IoT sensor, a cloud workload — traffic from all of them passes through the fabric, gets inspected, and has policy applied consistently. When connectivity drops and restores, policy enforcement resumes automatically. No local team required, no compliance gap.`,
+    `Real-time adaptation is built into the model. AI Defense continuously analyzes behavioral baselines for your AI workloads. When a workload starts behaving anomalously — unexpected data movement, unusual API calls, lateral traffic that shouldn't exist — it flags and isolates automatically. That is what stops AI-powered threats from spreading across your 47-country network before your team even sees an alert.`,
   ],
 
-  // DIMENSION 3 — Simplified ops / day-to-day workload
+  // DIMENSION 3 — Ops: strategic IT enablement, real-time analytics, innovation
   ops_simplified: [
-    `Day-to-day reality with AI Canvas: your team sees one correlated timeline — network events, security events, application performance — across all 200 locations simultaneously. When something breaks at a plant in Eastern Europe at 2am, the on-call engineer knows in under 5 minutes whether to call the ISP, escalate to the cloud provider, or fix something local. No tool-hopping, no scavenger hunt.`,
-    `The operational shift for your global team: instead of three engineers per region managing separate tools, you have one unified operations center managing the full estate. Policy changes push globally in one action. That's where the 40 percent reduction in support tickets comes from — not from the technology being simpler, but from eliminating the coordination overhead between disconnected systems.`,
-    `Concretely, a global manufacturer with 80 mixed-infrastructure sites freed up two full-time network engineers within 6 months of deploying AI Canvas. Those engineers had been full-time firefighters. With unified visibility and automated policy enforcement, they shifted to proactive work. That's the day-to-day workload impact.`,
+    `AI Canvas is not just a dashboard — it is strategic IT enablement. Your team gets one correlated timeline of network, security, and application events across all 200 locations. Real-time analytics surface anomalies before they become outages. When something breaks at 2am in Eastern Europe, the on-call engineer resolves in under five minutes without calling a regional team. That frees your engineers from firefighting to driving AI innovation.`,
+    `The operational shift is measurable. Before: engineers per region managing separate tools, hours to correlate an incident across network and security layers. After: one unified operations center, one policy push reaches all 200 sites simultaneously, 40 percent fewer support tickets. The engineers who were full-time firefighters shift to proactive work within six months. That is strategic value — not just efficiency, but IT as a competitive enabler.`,
+    `AI Canvas connects real-time analytics to automated action. When ThousandEyes detects a degraded cloud path affecting AI workloads in Southeast Asia, AI Canvas automatically reroutes traffic and notifies your team — before users report an issue. No ticket. No war room. No escalation chain across time zones. That is the operational model GlobalConnect needs to run AI at scale across 47 countries.`,
   ],
 
-  // DIMENSION 4 — Business value / ROI
+  // DIMENSION 4 — Business value: financial outcomes, dollar ROI
   business_value: [
-    `The numbers from a similar deployment: 80 sites, mixed Cisco and non-Cisco. Before: 14 unplanned outages per quarter, mean time-to-resolve 4 hours. After: 3 outages, 35-minute resolution. 30 percent OpEx reduction in year one from consolidating 4 separate vendor contracts. They didn't rip anything out — they layered Cisco's architecture on top of what they had.`,
-    `For a manufacturer like GlobalConnect, the financial case runs three ways. First, downtime reduction — 40 percent less unplanned downtime translates directly to production output. Second, OpEx savings — 30 percent from tool consolidation and reduced manual engineering hours. Third, AI time-to-value — your analytics and automation initiatives actually scale when the network is consistent. What does a single production shift disruption cost you today?`,
+    `The financial case is direct. A manufacturer of similar scale — 80 sites, mixed infrastructure — achieved 30 percent OpEx reduction in year one from consolidating four separate vendor contracts under one Cisco EA. Unplanned outages dropped from 14 to 3 per quarter, and mean time-to-resolve fell from 4 hours to 35 minutes. At GlobalConnect's scale across 47 countries, 30 percent OpEx savings is a material number your CFO can take to the board.`,
+    `Three financial impact lines for GlobalConnect. First: 40 percent reduction in unplanned downtime — every production shift protected translates directly to output and revenue. Second: 30 percent OpEx savings from tool consolidation, eliminating the overhead of reconciling five separate vendor contracts. Third: AI time-to-value — your analytics and automation initiatives actually scale when the network delivers consistent performance everywhere. What does a single shift disruption cost you at a manufacturing site today?`,
+    `Energy efficiency is a fourth line item. Cisco's AI-powered network management dynamically optimizes power consumption across sites — customers typically see 15 to 20 percent reduction in network energy costs. Combined with the OpEx savings from contract consolidation and the engineering hours recaptured from firefighting, the total-cost-of-ownership case for GlobalConnect is compelling well before you factor in the revenue impact of reliable AI everywhere.`,
   ],
 
-  // DIMENSION 5 — Investment protection / flexibility
+  // DIMENSION 5 — Investment protection: strategic advantage, risk minimization
   investment: [
-    `The Cisco Enterprise Agreement is one unified license — networking, security, management — covering your Cisco and non-Cisco gear, on-prem and cloud, under one predictable price. Nothing you have gets displaced. You activate ThousandEyes visibility first, prove value at your three worst sites, then expand. It's a strategic platform for AI growth, not a replacement cycle.`,
-    `Investment protection is built into how Cisco licenses. One EA covers your full mixed estate — legacy OT, modern branches, cloud workloads — with flexible deployment: on-prem, cloud-managed, or hybrid. Your existing infrastructure becomes AI-ready through activation, not migration. That means your capital investments keep working while you scale AI initiatives globally.`,
-    `The EA protects what you have and funds what you need. Unified licensing across on-prem and cloud removes the per-site cost unpredictability your team is managing today. Phased activation — ThousandEyes now, AI Defense and AI Canvas on your timeline — means you control the pace. This is Cisco as a long-term AI infrastructure partner, not a one-time hardware sale.`,
+    `The Cisco Enterprise Agreement is a strategic advantage, not just a licensing convenience. One predictable price covers networking, security, and management across your Cisco and non-Cisco gear, on-prem and cloud and hybrid — no per-site surprises, no contract renegotiation as you expand. Your existing infrastructure becomes AI-ready through activation, not migration. Capital investments keep working while AI initiatives scale globally.`,
+    `Investment protection works at two levels. First, the EA covers your full mixed estate — legacy OT controllers, modern campus gear, cloud workloads — all under one contract. Second, phased activation means you start with your three worst-performing sites, prove the ROI in 90 days, and expand at your own pace. Cisco minimizes risk at every stage. No forced migration, no disruptive cutover, no hidden integration costs.`,
+    `The long-term framing: this is Cisco as your AI infrastructure partner, not a hardware sale. The EA grows with GlobalConnect — new sites, new AI use cases, new cloud providers — all covered under one agreement. On-prem, cloud-managed, or hybrid deployment options mean you are never locked into a model that does not fit your regional constraints or budget cycles. Maximize the value of what you have while building what you need.`,
   ],
 
-  // DIMENSION 6 — One Cisco Story / holistic partner
+  // DIMENSION 6 — One Cisco Story: portfolio breadth, only vendor capable
   one_cisco: [
-    `This is what Cisco calls the One Cisco Story — one architecture from your data center to your most remote plant across all 47 countries. ThousandEyes, Catalyst, Meraki, AI Defense, and AI Canvas share a common data plane. Security events, network events, and application performance all correlate in one timeline automatically. No integration tax. One vendor owns the outcome.`,
-    `The One Cisco Story means GlobalConnect gets portfolio breadth no other vendor can match — networking, security, observability, and management designed to work together from day one. When something breaks at 3am in Southeast Asia, you call one number. Cisco owns all layers. No finger-pointing, no escalation maze. That accountability is the strategic differentiator for a team managing 47 countries.`,
-    `What no point solution vendor can offer: the One Cisco Story gives you a single AI-ready architecture that spans data center, campus, branch, factory floor, and cloud — all managed through AI Canvas, all visible through ThousandEyes, all secured by AI Defense. It's not a bundle. It's an integrated platform built end-to-end for the AI era. Peace of mind across GlobalConnect's entire footprint from one trusted partner.`,
+    `This is the One Cisco Story — one architecture spanning data center, campus, branch, factory floor, and cloud across all 47 countries. ThousandEyes, Catalyst, Meraki, AI Defense, and AI Canvas share a common data plane. Security events, network events, and application performance correlate automatically in one timeline. No integration tax. One vendor accountable for all layers. No other vendor can deliver this end-to-end.`,
+    `The One Cisco Story is GlobalConnect's strategic differentiator as a buyer. Portfolio breadth no other vendor matches — networking, security, observability, and unified management all designed to work together from day one. When something breaks at 3am in Southeast Asia, you call one number. Cisco owns every layer. No finger-pointing, no vendor bridge calls, no escalation maze. That accountability matters enormously when AI workloads are production-critical.`,
+    `What makes Cisco uniquely qualified: the One Cisco Story means every component was designed to interoperate — not integrated after acquisition, not bolted together. ThousandEyes visibility feeds AI Canvas management, which enforces AI Defense security policies, which run on Catalyst and Meraki fabric. That closed loop is what enables real-time adaptation, automated remediation, and the consistent AI performance GlobalConnect needs everywhere from headquarters to its most remote plant.`,
   ],
 
-  // Competitor differentiation — when Sonia compares to other vendors
+  // Competitor differentiation
   vsCompetitors: [
-    `Most vendors offering unified management are offering a unified view of their own products. AI Canvas and ThousandEyes work across your entire mixed estate — Cisco and non-Cisco, legacy OT and modern IT, on-prem and cloud. That's not a marketing claim — it's the reason manufacturers with the most complex mixed environments choose Cisco over Arista or Juniper for this use case.`,
-    `The honest differentiation: Arista and Juniper both have strong networking. The gap is what happens when the issue isn't on the network — when it's a cloud provider's routing, or an application behavior, or a security policy conflict between two vendors' gear. ThousandEyes sees all of that. Their monitoring tools don't. That's where your team loses hours today.`,
+    `Other vendors claiming unified management offer a unified view of their own products. AI Canvas and ThousandEyes work across your full mixed estate — Cisco and non-Cisco, legacy OT and modern IT, on-prem and cloud. That is not a marketing claim. It is why manufacturers with the most complex mixed environments choose Cisco over Arista or Juniper. They cannot show you what happens beyond their own stack.`,
+    `The gap is what happens when the issue is not on your network — when it is a cloud provider routing AI traffic suboptimally, or a security policy conflict between two vendors' gear. ThousandEyes sees the full path: your WAN, the internet hop, the cloud provider's routing, inside the application. Arista and Juniper monitoring stops at their own devices. That is where your team loses hours today, and where Cisco stops the loss.`,
+    `On paper, centralized management sounds simpler than what Cisco offers. In practice, centralized models collapse when you have legacy OT, modern IT, and cloud workloads all running different vendors' gear across 47 countries. Cisco AI Canvas manages the full estate regardless of vendor. Policy changes push globally in one action. That is the operational simplification GlobalConnect actually needs — not a dashboard for one vendor's hardware.`,
   ],
 
   // Proof / customer evidence
   proof: [
-    `A discrete manufacturer, 80 sites globally, mixed Cisco and non-Cisco including legacy OT. They started ThousandEyes on their 5 worst sites, showed 70 percent troubleshooting time reduction in 90 days, then expanded to the full estate. Full deployment under one Enterprise Agreement with no rip-and-replace. Before: 14 unplanned outages per quarter. After: 3. Mean time-to-resolve from 4 hours to 35 minutes.`,
-    `An automotive manufacturer, 35 plants, AI-driven predictive maintenance. Same mixed-infrastructure situation you're describing. After deployment, their network team cut cross-domain troubleshooting from half a day to under an hour. Two engineers who were full-time firefighters shifted to proactive work within 6 months. The adoption was phased — ThousandEyes first, AI Defense 90 days later, AI Canvas at month 6.`,
+    `A discrete manufacturer, 80 sites globally, mixed Cisco and non-Cisco including legacy OT. They started ThousandEyes on their 5 worst sites and showed 70 percent troubleshooting time reduction in 90 days — with their existing non-Cisco gear in place. Full deployment under one Enterprise Agreement, no rip-and-replace. Before: 14 unplanned outages per quarter. After: 3. Mean time-to-resolve from 4 hours to 35 minutes. Legacy OT included throughout.`,
+    `An automotive manufacturer, 35 plants, AI-driven predictive maintenance across a mixed legacy and modern environment. Phased deployment: ThousandEyes first, AI Defense at 90 days, AI Canvas at month 6 — all non-disruptive. Cross-domain troubleshooting dropped from half a day to under an hour. Two engineers shifted from firefighting to proactive innovation within 6 months. No equipment swapped out. The EA covered everything already in place.`,
   ],
 };
 
@@ -1012,6 +1029,22 @@ const CLOSE_LINES = [
 // 3. "legacy", "in practice", "exist" etc only fire investment if NO security/ops context
 function getAnswerKey(text) {
   const q = text.toLowerCase();
+
+  // ── SYNTHESIS — Sonia wants you to summarize and show you understand ─────
+  // "what is our most critical challenge", "based on everything you've heard"
+  // This is the ONE CISCO STORY moment — must name it explicitly
+  const isSynthesis =
+    q.includes('most critical challenge') ||
+    q.includes('critical challenge') ||
+    q.includes('based on everything') ||
+    q.includes('based on what') ||
+    q.includes('what do you see as') ||
+    q.includes('do you really understand') ||
+    q.includes('help me understand') ||
+    q.includes('make sure you understand') ||
+    q.includes('what have you taken') ||
+    (q.includes('how exactly') && q.includes('address'));
+  if (isSynthesis) return 'synthesis';
 
   // ── BUYING SIGNALS ────────────────────────────────────────────────────────
   // STRICT: require phrases that ONLY appear when Sonia is committing, not asking
@@ -1172,6 +1205,7 @@ const dimensionMap = {
   business_value: 'business_value',
   investment: 'investment',
   one_cisco: 'one_cisco',
+  synthesis: 'one_cisco',   // synthesis answer covers One Cisco Story
   vsCompetitors: 'one_cisco',
   proof: 'business_value',
 };
@@ -1183,11 +1217,29 @@ function allDimensionsCovered() {
 function pickAnswer(key) {
   if (!usedAnswerIdx[key]) usedAnswerIdx[key] = 0;
   const bank = ANSWERS[key];
-  const idx = usedAnswerIdx[key] % bank.length;
+  const timesUsed = usedAnswerIdx[key];
   usedAnswerIdx[key]++;
   // Mark dimension as covered
   if (dimensionMap[key]) dimensionsCovered[dimensionMap[key]] = true;
-  return bank[idx];
+  // If all variants exhausted, return last variant (still fresh-ish) or pivot to missing dimension
+  if (timesUsed >= bank.length) {
+    // Try to pivot to a missing dimension instead of repeating
+    const pivot = getMissingDimensionKey();
+    if (pivot && pivot !== key) return pickAnswer(pivot);
+    // All dimensions covered — use last variant
+    return bank[bank.length - 1];
+  }
+  return bank[timesUsed];
+}
+
+function getMissingDimensionKey() {
+  if (!dimensionsCovered.security_fused) return 'security_fused';
+  if (!dimensionsCovered.ops_simplified) return 'ops_simplified';
+  if (!dimensionsCovered.business_value) return 'business_value';
+  if (!dimensionsCovered.investment) return 'investment';
+  if (!dimensionsCovered.one_cisco) return 'one_cisco';
+  if (!dimensionsCovered.distributed_ai) return 'distributed';
+  return null;
 }
 
 function pickClose() {
@@ -1197,12 +1249,8 @@ function pickClose() {
 }
 
 function getMissingDimension() {
-  if (!dimensionsCovered.security_fused) return pickAnswer('security_fused');
-  if (!dimensionsCovered.ops_simplified) return pickAnswer('ops_simplified');
-  if (!dimensionsCovered.business_value) return pickAnswer('business_value');
-  if (!dimensionsCovered.investment) return pickAnswer('investment');
-  if (!dimensionsCovered.one_cisco) return pickAnswer('one_cisco');
-  if (!dimensionsCovered.distributed_ai) return pickAnswer('distributed');
+  const key = getMissingDimensionKey();
+  if (key) return pickAnswer(key);
   return pickClose(); // all covered — go to close
 }
 
@@ -1214,6 +1262,8 @@ function pickResponse() {
   // Detect what Sonia is specifically asking
   const answerKey = getAnswerKey(currentCapture);
 
+  // Synthesis — Sonia asking for critical challenge summary → One Cisco Story moment
+  if (answerKey === 'synthesis') return pickAnswer('synthesis');
   // Buying signals — Sonia ready to move forward
   if (answerKey === 'confirm') return pickConfirm();
   // Timeline / pilot questions
@@ -1268,9 +1318,16 @@ async function generateResponse() {
     }
     if (apiMsgs.length > 0 && apiMsgs[apiMsgs.length - 1].role === 'user') apiMsgs.pop();
 
+    const coveredDimensions = Object.entries(dimensionsCovered)
+      .filter(([,v]) => v).map(([k]) => k).join(', ') || 'none yet';
     const finalUserMsg = `Sonia just said: "${currentCapture}"
-Already covered (do not repeat): ${sellerPrior || 'nothing yet'}
-Reply directly to Sonia. New info only. 25-30 words max.`;
+
+Already said (DO NOT repeat any of these points): ${sellerPrior || 'nothing yet'}
+
+Dimensions already covered: ${coveredDimensions}
+Dimensions NOT YET covered: ${Object.entries(dimensionsCovered).filter(([,v])=>!v).map(([k])=>k).join(', ') || 'all covered'}
+
+Reply directly to what Sonia asked. Weave in uncovered dimensions naturally. Follow all rules in your system prompt exactly.`;
 
     generatedResponse = await callAPI([...apiMsgs, { role: 'user', content: finalUserMsg }], RESPONSE_SYS);
     apiSuccess = true;
